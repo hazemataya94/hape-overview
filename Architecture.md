@@ -76,31 +76,18 @@ This document describes the high-level architecture for a self-healing DevOps pl
 ## Flow chart
 
 ```mermaid
-graph LR
-  U[User];
-  AG[DevOps Platform Agent TBD];
-  CLI[CLI];
-  WF[Workflow Runner];
-  CP[Clients Packages];
-  P[Prometheus];
-  G[Grafana];
-  K[Kubernetes];
-  CLOUD[AWS or GCP];
-  VCS[GitHub or GitLab];
-  WM[Jira or Confluence];
-  TF[Terraform State];
-
-  U --> CLI;
-  AG --> CLI;
-  CLI --> WF;
-  WF --> CP;
-  P --> CP;
-  P --> G;
-  CP --> K;
-  CP --> CLOUD;
-  CP --> VCS;
-  CP --> WM;
-  CP --> TF;
-  G --> U;
-  G --> AG;
+graph LR;
+U[User] --> CLI[CLI];
+AG[DevOps Platform Agent] --> CLI;
+CLI --> WF[Workflow Runner];
+WF --> CP[Clients Packages];
+P[Prometheus] --> CP;
+P --> G[Grafana];
+CP --> K[Kubernetes];
+CP --> CLOUD[AWS or GCP];
+CP --> VCS[GitHub or GitLab];
+CP --> WM[Jira or Confluence];
+CP --> TF[Terraform State];
+G --> U;
+P --> AG;
 ```
