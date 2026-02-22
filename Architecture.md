@@ -77,6 +77,20 @@ This document describes the high-level architecture for a self-healing DevOps pl
 
 ```mermaid
 graph LR
+  U[User];
+  AG[DevOps Platform Agent TBD];
+  CLI[CLI];
+  WF[Workflow Runner];
+  PY[Python Clients Package];
+  GO[Go Metrics API];
+  P[Prometheus];
+  G[Grafana];
+  K[Kubernetes];
+  CLOUD[AWS or GCP];
+  VCS[GitHub or GitLab];
+  WM[Jira or Confluence];
+  TF[Terraform State];
+
   U --> CLI;
   AG --> CLI;
   CLI --> WF;
