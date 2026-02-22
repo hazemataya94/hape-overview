@@ -1,12 +1,20 @@
-Self healing infrastructure, is that a dream? I don’t think so — at least not since we’ve had LLM agents to help bring our vision to life.
+# HAPE Overview
 
-LLM agents changed the software development world. Now, to implement your vision, you just need a well-guided LLM, and you can build your solution much faster.
+I'm starting this project on 22.02.2026 as a learning and research project to answer the question:
+Is it still a dream to have an open source self healing infrastructure further pushing our advancement base in technology.
 
-And I think this applies to infrastructure too. Nowadays everything is moving to IaC, and once infrastructure is code, it becomes closer to software: architecture, workflows, testing, and automation.
+The LLM agents have changed our world, software development world. Now to implement your vision, you just need a well guided LLM, and you'll implement your solution in no time.
 
-I’m starting this project on 22.02.2026 as a learning and research project to answer one question: is self healing infrastructure still a dream, or can we actually build it?
+This also applies to infrastructure, since nowadays everything is switching to IaC, and as long as you understand software architecture, working on infrastructure is not that different.
 
-# Author
-## Hazem Ataya
-- Linkedin: https://www.linkedin.com/in/hazem-ataya-29849b151/
-- Github: https://github.com/hazemataya94
+## Intellectual Property / Permissions
+Copyright (c) 2026 Hazem Ataya. All rights reserved.
+
+This repository is **not licensed**. No permission is granted to use, copy, modify, merge, publish, distribute, sublicense, or sell any part of this repository or its contents without **explicit written permission** from the copyright holder.
+
+## Contributions
+Contributions are not accepted at the moment.
+
+## Author
+- LinkedIn: https://www.linkedin.com/in/hazem-ataya/
+- GitHub: https://github.com/hazemataya94
