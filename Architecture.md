@@ -73,7 +73,7 @@ This document describes the high-level architecture for a self-healing DevOps pl
 
 ---
 
-## Mermaid flow chart
+## Flow chart
 
 ```mermaid
 graph LR
