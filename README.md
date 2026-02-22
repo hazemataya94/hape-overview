@@ -5,3 +5,8 @@ LLM agents changed the software development world. Now, to implement your vision
 And I think this applies to infrastructure too. Nowadays everything is moving to IaC, and once infrastructure is code, it becomes closer to software: architecture, workflows, testing, and automation.
 
 I’m starting this project on 22.02.2026 as a learning and research project to answer one question: is self healing infrastructure still a dream, or can we actually build it?
+
+# Author
+## Hazem Ataya
+- Linkedin: https://www.linkedin.com/in/hazem-ataya-29849b151/
+- Github: https://github.com/hazemataya94
