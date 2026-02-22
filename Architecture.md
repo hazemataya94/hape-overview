@@ -31,21 +31,21 @@ This document describes the high-level architecture for a self-healing DevOps pl
 ## Observation Platform
 
 ### Components
-- **Go Stateless Backend API (Metrics Exporter)**
+- * Stateless Backend API (Metrics Exporter)**
   - Reads live data from 3rd-party APIs and exposes metrics for Prometheus.
   - No persistent database. Uses caching and rate limiting to make scraping stable.
 - **Prometheus**
-  - Scrapes the Go API (`/metrics`) on a schedule.
+  - Scrapes the API (`/metrics`) on a schedule.
 - **Grafana**
   - Visualizes metrics and drives alerts.
 
-### Caching (in the Go API)
+### Caching (in the API)
 - **TTL cache per integration/endpoint** (configurable; seconds/minutes depending on source volatility).
 - **Request coalescing** (deduplicate concurrent identical requests during a scrape window).
 - **Timeouts** for all outbound calls; return partial metrics if some sources fail.
 - Optional: **stale-while-revalidate** for expensive calls (serve slightly stale values while refreshing).
 
-### Rate limiting (in the Go API)
+### Rate limiting (in the API)
 - **Per-integration rate limits** (token bucket / leaky bucket style).
 - **Concurrency caps** per integration to avoid burst fan-out on scrapes.
 - **Backoff + jitter** on upstream throttling responses.
@@ -63,7 +63,7 @@ This document describes the high-level architecture for a self-healing DevOps pl
 ## Main flows
 
 1) **Observability**
-- Go Metrics API reads 3rd-party systems (cached + rate-limited) → Prometheus scrapes → Grafana dashboards/alerts
+- Metrics API reads 3rd-party systems (cached + rate-limited) → Prometheus scrapes → Grafana dashboards/alerts
 
 2) **Automation**
 - User/Agent → CLI → Python clients → 3rd-party systems (actions/control)
@@ -81,8 +81,7 @@ graph LR
   AG[DevOps Platform Agent TBD];
   CLI[CLI];
   WF[Workflow Runner];
-  PY[Python Clients Package];
-  GO[Go Metrics API];
+  CP[Clients Packages];
   P[Prometheus];
   G[Grafana];
   K[Kubernetes];
@@ -94,19 +93,14 @@ graph LR
   U --> CLI;
   AG --> CLI;
   CLI --> WF;
-  WF --> PY;
-  P --> GO;
+  WF --> CP;
+  P --> CP;
   P --> G;
-  PY --> K;
-  PY --> CLOUD;
-  PY --> VCS;
-  PY --> WM;
-  PY --> TF;
-  GO --> K;
-  GO --> CLOUD;
-  GO --> VCS;
-  GO --> WM;
-  GO --> TF;
+  CP --> K;
+  CP --> CLOUD;
+  CP --> VCS;
+  CP --> WM;
+  CP --> TF;
   G --> U;
   G --> AG;
 ```
