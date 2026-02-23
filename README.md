@@ -15,6 +15,9 @@ This repository is **not licensed**. No permission is granted to use, copy, modi
 ## Contributions
 Contributions are not accepted at the moment.
 
+## Architecture
+- [Architecture Document](file:///Users/hazemataya/Downloads/Architecture.md)
+
 ## Author
-- LinkedIn: https://www.linkedin.com/in/hazem-ataya/
+- LinkedIn: https://www.linkedin.com/in/hazem-ataya-29849b151/
 - GitHub: https://github.com/hazemataya94
