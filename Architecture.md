@@ -32,12 +32,15 @@ This document describes the high-level architecture for a self-healing DevOps pl
 
 ### Components
 - **Exporters**
-  - Read data from 3rd-party APIs and expose metrics for Prometheus.
+  - Read data from 3rd-party APIs and expose metrics for the time-series metrics database.
   - No persistent database. Use caching and rate limiting to keep scrapes stable.
-- **Prometheus**
+- **Time-Series Metrics Database**
   - Scrapes exporters (`/metrics`) on a schedule.
-- **Grafana**
+- **Visualization Tool**
   - Visualizes metrics and drives alerts.
+- **Selected implementations**
+  - Prometheus is chosen as the time-series metrics database.
+  - Grafana is chosen as the visualization tool.
 
 ---
 
@@ -51,13 +54,13 @@ This document describes the high-level architecture for a self-healing DevOps pl
 ## Main flows
 
 1) **Observability**
-- Exporters read 3rd-party systems (cached + rate-limited) → Prometheus scrapes exporters → Grafana dashboards/alerts
+- Exporters read 3rd-party systems (cached + rate-limited) → time-series metrics database scrapes exporters → visualization tool dashboards/alerts
 
 2) **Automation**
 - User/Agent → CLI → Python clients → 3rd-party systems (actions/control)
 
 3) **Feedback loop**
-- Grafana alerts/insights → User/Agent → CLI runs remediation workflows
+- Visualization tool alerts/insights → User/Agent → CLI runs remediation workflows
 
 ---
 
@@ -68,8 +71,8 @@ graph TD
   U[User] --> CLI[CLI]
   AG[DevOps Platform Agent] --> CLI
   CLI --> CP[Clients Packages]
-  P[Prometheus] --> EXP[Exporters]
-  P --> G[Grafana]
+  P[Time Series Metrics Database] --> EXP[Exporters]
+  P --> G[Visualization Tool]
   CP --> K[Kubernetes]
   CP --> CLOUD[AWS GCP]
   CP --> VCS[GitHub GitLab]
