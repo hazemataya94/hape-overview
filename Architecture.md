@@ -67,8 +67,7 @@ This document describes the high-level architecture for a self-healing DevOps pl
 graph TD
   U[User] --> CLI[CLI]
   AG[DevOps Platform Agent] --> CLI
-  CLI --> WF[Workflow Runner]
-  WF --> CP[Clients Packages]
+  CLI --> CP[Clients Packages]
   P[Prometheus] --> EXP[Exporters]
   P --> G[Grafana]
   CP --> K[Kubernetes]
