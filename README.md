@@ -1,11 +1,11 @@
 # HAPE Overview
-
-I'm starting this project on 22.02.2026 as a learning and research project to answer the question:
-Is it still a dream to have an open source self healing infrastructure further pushing our advancement base in technology.
-
 The LLM agents have changed our world, software development world. Now to implement your vision, you just need a well guided LLM, and you'll implement your solution in no time.
 
 This also applies to infrastructure, since nowadays everything is switching to IaC, and as long as you understand software architecture, working on infrastructure is not that different.
+
+I'm starting this project on 22.02.2026 as a learning and research project to answer the question:
+Is it still a dream to have a self healing infrastructure further pushing our advancement base in technology.
+
 
 ## Intellectual Property / Permissions
 Copyright (c) 2026 Hazem Ataya. All rights reserved.
