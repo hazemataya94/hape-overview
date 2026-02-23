@@ -12,6 +12,31 @@ This document describes the high-level architecture for a self-healing DevOps pl
 
 ---
 
+## Flow chart
+
+```mermaid
+graph TD
+  U[User] --> CLI[CLI]
+  AG[DevOps Platform Agent] --> CLI
+  CLI --> CP[Clients Packages]
+  P[Time Series Metrics Database] --> EXP[Metrics Collectors]
+  P --> G[Visualization Tool]
+  CP --> K[Kubernetes]
+  CP --> CLOUD[AWS GCP]
+  CP --> VCS[GitHub GitLab]
+  CP --> WM[Jira Confluence]
+  CP --> TF[Terraform State]
+  EXP --> K
+  EXP --> CLOUD
+  EXP --> VCS
+  EXP --> WM
+  EXP --> TF
+  G --> U
+  P --> AG
+```
+
+---
+
 ## Automation Platform
 
 ### Components
@@ -59,28 +84,3 @@ This document describes the high-level architecture for a self-healing DevOps pl
 
 3) **Feedback loop**
 - Visualization tool alerts/insights → User/Agent → CLI runs remediation workflows
-
----
-
-## Flow chart
-
-```mermaid
-graph TD
-  U[User] --> CLI[CLI]
-  AG[DevOps Platform Agent] --> CLI
-  CLI --> CP[Clients Packages]
-  P[Time Series Metrics Database] --> EXP[Metrics Collectors]
-  P --> G[Visualization Tool]
-  CP --> K[Kubernetes]
-  CP --> CLOUD[AWS GCP]
-  CP --> VCS[GitHub GitLab]
-  CP --> WM[Jira Confluence]
-  CP --> TF[Terraform State]
-  EXP --> K
-  EXP --> CLOUD
-  EXP --> VCS
-  EXP --> WM
-  EXP --> TF
-  G --> U
-  P --> AG
-```
