@@ -19,7 +19,7 @@ graph TD
   U[User] --> CLI[CLI]
   AG[DevOps Platform Agent] --> CLI
   CLI --> CP[Clients Packages]
-  P[Time Series Metrics Database] --> EXP[Metrics Collectors]
+  P[Time Series Database (TSDB)] --> EXP[Metrics Collectors]
   P --> G[Visualization Tool]
   CP --> K[Kubernetes]
   CP --> CLOUD[AWS GCP]
