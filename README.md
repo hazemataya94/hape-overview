@@ -6,7 +6,6 @@ This also applies to infrastructure, since nowadays everything is switching to I
 I'm starting this project on 22.02.2026 as a learning and research project to answer the question:
 Is it still a dream to have a self healing infrastructure further pushing our advancement pace in technology.
 
-
 ## Intellectual Property / Permissions
 Copyright (c) 2026 Hazem Ataya. All rights reserved.
 
