@@ -3,7 +3,6 @@
 Date: 22.02.2026
 
 ## Scope
-
 This document describes the high-level architecture for a self-healing DevOps platform with:
 - **Automation** (actions/control)
 - **Observation** (metrics/visibility)
@@ -31,30 +30,29 @@ This document describes the high-level architecture for a self-healing DevOps pl
 ## Observation Platform
 
 ### Components
-- **Exporters**
+- **Metrics Collectors**
   - Read data from 3rd-party APIs and expose metrics for the time-series metrics database.
   - No persistent database. Use caching and rate limiting to keep scrapes stable.
 - **Time-Series Metrics Database**
-  - Scrapes exporters (`/metrics`) on a schedule.
+  - Scrapes metrics collectors on a schedule.
 - **Visualization Tool**
   - Visualizes metrics and drives alerts.
 - **Selected implementations**
   - Prometheus is chosen as the time-series metrics database.
   - Grafana is chosen as the visualization tool.
+  - Prometheus exporters are the chosen metrics collectors.
 
 ---
 
 ## DevOps Platform Agent (TBD)
-
 - Orchestrator that decides *what to do* and *when to do it*.
 - Executes actions only via the **CLI**.
 
 ---
 
 ## Main flows
-
 1) **Observability**
-- Exporters read 3rd-party systems (cached + rate-limited) → time-series metrics database scrapes exporters → visualization tool dashboards/alerts
+- Metrics collectors read 3rd-party systems (cached + rate-limited) → time-series metrics database scrapes metrics collectors → visualization tool dashboards/alerts
 
 2) **Automation**
 - User/Agent → CLI → Python clients → 3rd-party systems (actions/control)
@@ -71,7 +69,7 @@ graph TD
   U[User] --> CLI[CLI]
   AG[DevOps Platform Agent] --> CLI
   CLI --> CP[Clients Packages]
-  P[Time Series Metrics Database] --> EXP[Exporters]
+  P[Time Series Metrics Database] --> EXP[Metrics Collectors]
   P --> G[Visualization Tool]
   CP --> K[Kubernetes]
   CP --> CLOUD[AWS GCP]
