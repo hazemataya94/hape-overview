@@ -34,6 +34,17 @@ graph TD
   G --> U
   P --> AG
 ```
+---
+
+## Main flows
+1) **Observability**
+- Metrics collectors read 3rd-party systems (cached + rate-limited) → time-series metrics database scrapes metrics collectors → visualization tool dashboards/alerts
+
+2) **Automation**
+- User/Agent → CLI → Python clients → 3rd-party systems (actions/control)
+
+3) **Feedback loop**
+- Visualization tool alerts/insights → User/Agent → CLI runs remediation workflows
 
 ---
 
@@ -72,15 +83,3 @@ graph TD
 ## DevOps Platform Agent (TBD)
 - Orchestrator that decides *what to do* and *when to do it*.
 - Executes actions only via the **CLI**.
-
----
-
-## Main flows
-1) **Observability**
-- Metrics collectors read 3rd-party systems (cached + rate-limited) → time-series metrics database scrapes metrics collectors → visualization tool dashboards/alerts
-
-2) **Automation**
-- User/Agent → CLI → Python clients → 3rd-party systems (actions/control)
-
-3) **Feedback loop**
-- Visualization tool alerts/insights → User/Agent → CLI runs remediation workflows
