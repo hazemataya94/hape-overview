@@ -63,7 +63,7 @@ This document describes the high-level architecture for a self-healing DevOps pl
 - Visualization tool alerts/insights → User/Agent → CLI runs remediation workflows
 
 ---
-
+ 
 ## Flow chart
 
 ```mermaid
