@@ -15,7 +15,10 @@ This repository is **not licensed**. No permission is granted to use, copy, modi
 Contributions are not accepted at the moment.
 
 ## Architecture
-- [Architecture Document](Architecture.md)
+- [Architecture Document](docs/Architecture.md)
+
+## Documentation
+- [Documentation Directory](docs/README.md)
 
 ## Author
 - LinkedIn: https://www.linkedin.com/in/hazem-ataya-29849b151/
