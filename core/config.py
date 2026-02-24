@@ -23,31 +23,22 @@ class Config:
     default_dotenv_path = Path(__file__).resolve().parents[1] / ".env"
 
     supported_config_keys = [
-        "DEPLOYMENTS_ROOT",
         "GITLAB_DOMAIN",
         "GITLAB_TOKEN",
         "GITLAB_DEFAULT_GROUP_ID",
-        "KUBERNETES_CONTEXT",
         "ATLASSIAN_DOMAIN",
         "ATLASSIAN_EMAIL",
         "ATLASSIAN_API_KEY",
         "CONFLUENCE_CHANGELOG_PARENT_PAGE_ID",
         "CONFLUENCE_CHANGELOG_ENTRY_PAGE_TEMPLATE_ID",
-        "CONFLUENCE_TEST_PARENT_PAGE_ID",
-        "GRAFANA_DOMAIN",
-        "GRAFANA_PORT",
-        "GRAFANA_TOKEN",
-        "GRAFANA_USERNAME",
-        "GRAFANA_PASSWORD",
-        "GRAFANA_DEPLOYMENTS_SUBPATH",
+        "CONFLUENCE_TEST_PARENT_PAGE_ID"
     ]
 
     int_config_keys = [
         "GITLAB_DEFAULT_GROUP_ID",
         "CONFLUENCE_CHANGELOG_PARENT_PAGE_ID",
         "CONFLUENCE_CHANGELOG_ENTRY_PAGE_TEMPLATE_ID",
-        "CONFLUENCE_TEST_PARENT_PAGE_ID",
-        "GRAFANA_PORT",
+        "CONFLUENCE_TEST_PARENT_PAGE_ID"
     ]
 
     @staticmethod
@@ -148,13 +139,6 @@ class Config:
         return group_id
 
     @staticmethod
-    def get_kubernetes_context() -> str:
-        context = Config._get_config_value("KUBERNETES_CONTEXT")
-        context = ValidationUtils.require_string("KUBERNETES_CONTEXT", context)
-        ValidationUtils.validate_no_spaces("KUBERNETES_CONTEXT", context)
-        return context
-
-    @staticmethod
     def get_atlassian_domain() -> str:
         domain = Config._get_config_value("ATLASSIAN_DOMAIN")
         domain = ValidationUtils.require_string("ATLASSIAN_DOMAIN", domain)
@@ -205,79 +189,21 @@ class Config:
 
     @staticmethod
     def get_log_level() -> str:
-        log_level_raw = os.getenv("IDAP_LOG_LEVEL", "DEBUG")
+        log_level_raw = os.getenv("HAPE_LOG_LEVEL", "DEBUG")
         log_level = log_level_raw.strip().upper()
         allowed_levels = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
         if log_level not in allowed_levels:
             raise ValueError(
-                f"IDAP_LOG_LEVEL must be one of {sorted(allowed_levels)}. Value is '{log_level_raw}'."
+                f"HAPE_LOG_LEVEL must be one of {sorted(allowed_levels)}. Value is '{log_level_raw}'."
             )
         return log_level
 
     @staticmethod
     def get_enable_log_file() -> bool:
-        raw_value = os.getenv("IDAP_ENABLE_LOG_FILE", "0")
-        return ValidationUtils.validate_bool("IDAP_ENABLE_LOG_FILE", raw_value)
+        raw_value = os.getenv("HAPE_ENABLE_LOG_FILE", "0")
+        return ValidationUtils.validate_bool("HAPE_ENABLE_LOG_FILE", raw_value)
 
     @staticmethod
     def get_log_file_path() -> str:
-        log_file = os.getenv("IDAP_LOG_FILE", os.path.expanduser("~/.idap/idap.log"))
-        return ValidationUtils.require_string("IDAP_LOG_FILE", log_file)
-
-    @staticmethod
-    def get_deployments_root(required: bool = True) -> Optional[str]:
-        deployments_root = Config._get_config_value("DEPLOYMENTS_ROOT", required=required)
-        if deployments_root is None:
-            return None
-        return ValidationUtils.require_string("DEPLOYMENTS_ROOT", deployments_root)
-
-    @staticmethod
-    def get_grafana_domain(required: bool = True) -> Optional[str]:
-        grafana_domain = Config._get_config_value("GRAFANA_DOMAIN", required=required)
-        if grafana_domain is None:
-            return None
-        grafana_domain = ValidationUtils.require_string("GRAFANA_DOMAIN", grafana_domain)
-        ValidationUtils.validate_domain("GRAFANA_DOMAIN", grafana_domain)
-        return grafana_domain
-
-    @staticmethod
-    def get_grafana_port(required: bool = False, default: int = 443) -> int:
-        grafana_port = Config._get_config_int("GRAFANA_PORT", required=required)
-        if grafana_port is None:
-            return default
-        if grafana_port <= 0 or grafana_port > 65535:
-            raise ValueError(f"GRAFANA_PORT must be between 1 and 65535. Value is '{grafana_port}'.")
-        return grafana_port
-
-    @staticmethod
-    def get_grafana_token(required: bool = True) -> Optional[str]:
-        grafana_token = Config._get_config_value("GRAFANA_TOKEN", required=required)
-        if grafana_token is None:
-            return None
-        grafana_token = ValidationUtils.require_string("GRAFANA_TOKEN", grafana_token)
-        ValidationUtils.validate_no_spaces("GRAFANA_TOKEN", grafana_token)
-        return grafana_token
-
-    @staticmethod
-    def get_grafana_username(required: bool = True) -> Optional[str]:
-        grafana_username = Config._get_config_value("GRAFANA_USERNAME", required=required)
-        if grafana_username is None:
-            return None
-        grafana_username = ValidationUtils.require_string("GRAFANA_USERNAME", grafana_username)
-        ValidationUtils.validate_no_spaces("GRAFANA_USERNAME", grafana_username)
-        return grafana_username
-
-    @staticmethod
-    def get_grafana_password(required: bool = True) -> Optional[str]:
-        grafana_password = Config._get_config_value("GRAFANA_PASSWORD", required=required)
-        if grafana_password is None:
-            return None
-        grafana_password = ValidationUtils.require_string("GRAFANA_PASSWORD", grafana_password)
-        return grafana_password
-
-    @staticmethod
-    def get_grafana_deployments_subpath(required: bool = True) -> Optional[str]:
-        grafana_subpath = Config._get_config_value("GRAFANA_DEPLOYMENTS_SUBPATH", required=required)
-        if grafana_subpath is None:
-            return None
-        return ValidationUtils.require_string("GRAFANA_DEPLOYMENTS_SUBPATH", grafana_subpath)
+        log_file = os.getenv("HAPE_LOG_FILE", os.path.expanduser("~/.hape/hape.log"))
+        return ValidationUtils.require_string("HAPE_LOG_FILE", log_file)

@@ -1,0 +1,95 @@
+import argparse
+import sys
+from importlib import metadata
+
+from core.config import Config
+from core.errors.handler import ErrorHandler
+from cli.commands.config_commands import ConfigCommands
+from cli.commands.confluence_commands import ConfluenceCommands
+from cli.commands.csv_commands import CsvCommands
+from cli.commands.gitlab_commands import GitLabCommands
+from cli.commands.jira_commands import JiraCommands
+from cli.commands.markdown_commands import MarkdownCommands
+
+class _CommandHelpFormatter(argparse.HelpFormatter):
+    def _format_action(self, action) -> str:
+        if isinstance(action, argparse._SubParsersAction):
+            formatted = super()._format_action(action)
+            lines = formatted.splitlines()
+            if len(lines) > 1:
+                return "\n".join(lines[1:]) + "\n"
+        return super()._format_action(action)
+
+class _IDAPArgumentParser(argparse.ArgumentParser):
+    def error(self, message: str) -> None:
+        self.print_help(sys.stderr)
+        self.exit(2, f"\nerror: {message}\n")
+
+class CLI:
+    @staticmethod
+    def build_parser() -> argparse.ArgumentParser:
+        version = CLI._get_version()
+        parser = _IDAPArgumentParser(
+            prog="idap",
+            description="CLI for platform and DevOps automations.",
+            usage="%(prog)s [-h] [command] ...",
+            formatter_class=_CommandHelpFormatter,
+        )
+        parser.add_argument(
+            "--version",
+            action="version",
+            version=f"idap {version}",
+            help="print the installed idap version and exit.",
+        )
+        parser.add_argument(
+            "--config-file-path",
+            required=False,
+            default=None,
+            help="path to config.json (default: ~/.idap/config.json).",
+        )
+        parser._positionals.title = "commands"
+        subparsers = parser.add_subparsers(
+            dest="command",
+            metavar="command",
+            parser_class=_IDAPArgumentParser,
+        )
+        subparsers.required = False
+
+        ConfigCommands.register(subparsers)
+        GitLabCommands.register(subparsers)
+        JiraCommands.register(subparsers)
+        ConfluenceCommands.register(subparsers)
+        CsvCommands.register(subparsers)
+        MarkdownCommands.register(subparsers)
+
+        return parser
+
+    @staticmethod
+    def run() -> None:
+        parser = CLI.build_parser()
+        if len(sys.argv) == 1:
+            parser.print_help()
+            return
+        args = parser.parse_args()
+        Config.set_config_path(args.config_file_path)
+        if not args.command:
+            parser.print_help()
+            return
+        try:
+            args.func(args)
+        except Exception as exc:
+            exit_code = ErrorHandler.handle(exc)
+            raise SystemExit(exit_code)
+
+    @staticmethod
+    def _get_version() -> str:
+        try:
+            return metadata.version("hape")
+        except metadata.PackageNotFoundError:
+            return "unknown"
+
+def main() -> None:
+    CLI.run()
+
+if __name__ == "__main__":
+    main()

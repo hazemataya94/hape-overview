@@ -74,11 +74,10 @@ class GrafanaClient:
 if __name__ == "__main__":
     
     grafana_client = GrafanaClient(
-        # base_url="http://127.0.0.1:51716",
-        base_url="https://grafana.staging.ippen.space",
+        base_url="http://127.0.0.1:51716",
         token="",
-        username="admin",
-        password="fzjK6ohCWsVRdMhgPDAnUxHoHajrHftpxdXs7o",
+        username="user",
+        password="password",
     )
     grafana_datasources = grafana_client.list_dashboards()
     print(len(grafana_datasources))

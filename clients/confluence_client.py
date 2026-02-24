@@ -49,7 +49,7 @@ class ConfluenceClient:
         response.raise_for_status()
         return response.json()
 
-    def create_page(self, parent_page_id: str, page_title: str, page_body: str, space_key: str = "FD", labels: Optional[List[str]] = None, set_full_width: bool = True) -> dict:
+    def create_page(self, parent_page_id: str, page_title: str, page_body: str, space_key: str, labels: Optional[List[str]] = None, set_full_width: bool = True) -> dict:
         self.logger.debug(f"create_page(parent_page_id: {parent_page_id}, page_title: {page_title}, space_key: {space_key})")
         page_url = f"{self.confluence_base_url}/rest/api/content"
         payload = {
@@ -73,13 +73,8 @@ class ConfluenceClient:
             **self._get_auth_headers(),
             "Content-Type": "application/json",
         }
-        response = requests.post(
-            page_url,
-            headers=headers,
-            json=payload,
-        )
-        if response.status_code not in (200, 201):
-            raise RuntimeError(f"Failed to create Confluence page '{page_title}' (status={response.status_code}): {response.text}")
+        response = requests.post(page_url, headers=headers, json=payload)
+        response.raise_for_status()
         new_page = response.json()
         if set_full_width:
             self.set_page_full_width(new_page["id"])

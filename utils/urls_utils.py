@@ -15,24 +15,15 @@ class UrlsUtils:
     @staticmethod
     def normalize_atlassian_base_url(raw_domain: str) -> str:
         if not raw_domain:
-            raise ValueError(
-                "ATLASSIAN_DOMAIN is required (e.g., 'ippen.atlassian.net' "
-                "or 'https://ippen.atlassian.net')."
-            )
+            raise ValueError("ATLASSIAN_DOMAIN is required.")
         raw_domain = raw_domain.strip()
         if not raw_domain:
-            raise ValueError(
-                "ATLASSIAN_DOMAIN is required (e.g., 'ippen.atlassian.net' "
-                "or 'https://ippen.atlassian.net')."
-            )
+            raise ValueError("ATLASSIAN_DOMAIN is required.")
 
         if raw_domain.startswith(("http://", "https://")):
             parsed = urlparse(raw_domain)
             if not parsed.netloc:
-                raise ValueError(
-                    "ATLASSIAN_DOMAIN must include a host "
-                    "(e.g., 'https://ippen.atlassian.net')."
-                )
+                raise ValueError("ATLASSIAN_DOMAIN must include a host.")
             return f"{parsed.scheme}://{parsed.netloc}"
 
         host = raw_domain.split("/", 1)[0]
