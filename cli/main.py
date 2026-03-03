@@ -20,7 +20,7 @@ class _CommandHelpFormatter(argparse.HelpFormatter):
                 return "\n".join(lines[1:]) + "\n"
         return super()._format_action(action)
 
-class _IDAPArgumentParser(argparse.ArgumentParser):
+class _HapeArgumentParser(argparse.ArgumentParser):
     def error(self, message: str) -> None:
         self.print_help(sys.stderr)
         self.exit(2, f"\nerror: {message}\n")
@@ -29,8 +29,8 @@ class CLI:
     @staticmethod
     def build_parser() -> argparse.ArgumentParser:
         version = CLI._get_version()
-        parser = _IDAPArgumentParser(
-            prog="idap",
+        parser = _HapeArgumentParser(
+            prog="hape",
             description="CLI for platform and DevOps automations.",
             usage="%(prog)s [-h] [command] ...",
             formatter_class=_CommandHelpFormatter,
@@ -38,20 +38,20 @@ class CLI:
         parser.add_argument(
             "--version",
             action="version",
-            version=f"idap {version}",
-            help="print the installed idap version and exit.",
+            version=f"hape {version}",
+            help="print the installed hape version and exit.",
         )
         parser.add_argument(
             "--config-file-path",
             required=False,
             default=None,
-            help="path to config.json (default: ~/.idap/config.json).",
+            help="path to config.json (default: ~/.hape/config.json).",
         )
         parser._positionals.title = "commands"
         subparsers = parser.add_subparsers(
             dest="command",
             metavar="command",
-            parser_class=_IDAPArgumentParser,
+            parser_class=_HapeArgumentParser,
         )
         subparsers.required = False
 
