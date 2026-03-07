@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/hazemataya94/hape-framework/refs/heads/main/docs/logo.png" width="100%">
+
 # HAPE Framework Overview
 The LLM agents have changed our world, software development world. Now to implement your vision, you just need a well guided LLM, and you'll implement your solution in no time.
 
