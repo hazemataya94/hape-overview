@@ -1,4 +1,4 @@
-# HAPE Overview
+# HAPE Framework Overview
 The LLM agents have changed our world, software development world. Now to implement your vision, you just need a well guided LLM, and you'll implement your solution in no time.
 
 This also applies to infrastructure, since nowadays everything is switching to IaC, and as long as you understand software architecture, working on infrastructure is not that different.
