@@ -3,7 +3,7 @@
 Date: 22.02.2026
 
 ## Scope
-This document describes the high-level architecture for a self-healing DevOps platform with:
+This document describes the high-level architecture for a self-governance DevOps platform with:
 - **Automation** (actions/control)
 - **Observation** (metrics/visibility)
 - **DevOps Platform Agent** (optional orchestrator; TBD)
@@ -80,6 +80,6 @@ graph TD
 
 ---
 
-## DevOps Platform Agent (TBD)
+## DevOps Platform Agent OR Rule Engine AI (TBD)
 - Orchestrator that decides *what to do* and *when to do it*.
 - Executes actions only via the **CLI**.
