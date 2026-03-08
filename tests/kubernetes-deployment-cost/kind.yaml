@@ -1,0 +1,33 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: hape-eks-cost-test
+nodes:
+  - role: control-plane
+  - role: worker
+    kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "eks.amazonaws.com/nodegroup=ng-general,node.kubernetes.io/instance-type=m6i.large,topology.kubernetes.io/zone=eu-central-1a"
+  - role: worker
+    kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "eks.amazonaws.com/nodegroup=ng-general,node.kubernetes.io/instance-type=m6i.large,topology.kubernetes.io/zone=eu-central-1b"
+  - role: worker
+    kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "eks.amazonaws.com/nodegroup=ng-memory,node.kubernetes.io/instance-type=r6i.large,topology.kubernetes.io/zone=eu-central-1c"
+  - role: worker
+    kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "eks.amazonaws.com/nodegroup=ng-batch,node.kubernetes.io/instance-type=c6i.large,topology.kubernetes.io/zone=eu-central-1d"

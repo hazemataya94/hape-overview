@@ -1,6 +1,7 @@
 import boto3
 import os
 import time
+import json
 from botocore.exceptions import ClientError
 
 from core.logging import LocalLogging
@@ -14,8 +15,85 @@ class AwsClient:
         self.eks = self.session.client("eks")
         self.autoscaling = self.session.client("autoscaling")
         self.s3 = self.session.client("s3")
+        self.pricing = self.session.client("pricing", region_name="us-east-1")
         self.region_name = self.session.region_name or self.ec2.meta.region_name
         self.logger = LocalLogging.get_logger("hape.aws_client")
+
+    @staticmethod
+    def _build_region_location_mapping() -> dict[str, str]:
+        return {
+            "us-east-1": "US East (N. Virginia)",
+            "us-east-2": "US East (Ohio)",
+            "us-west-1": "US West (N. California)",
+            "us-west-2": "US West (Oregon)",
+            "af-south-1": "Africa (Cape Town)",
+            "ap-east-1": "Asia Pacific (Hong Kong)",
+            "ap-south-1": "Asia Pacific (Mumbai)",
+            "ap-south-2": "Asia Pacific (Hyderabad)",
+            "ap-southeast-1": "Asia Pacific (Singapore)",
+            "ap-southeast-2": "Asia Pacific (Sydney)",
+            "ap-southeast-3": "Asia Pacific (Jakarta)",
+            "ap-southeast-4": "Asia Pacific (Melbourne)",
+            "ap-northeast-1": "Asia Pacific (Tokyo)",
+            "ap-northeast-2": "Asia Pacific (Seoul)",
+            "ap-northeast-3": "Asia Pacific (Osaka)",
+            "ca-central-1": "Canada (Central)",
+            "ca-west-1": "Canada West (Calgary)",
+            "eu-central-1": "EU (Frankfurt)",
+            "eu-central-2": "Europe (Zurich)",
+            "eu-west-1": "EU (Ireland)",
+            "eu-west-2": "EU (London)",
+            "eu-west-3": "EU (Paris)",
+            "eu-north-1": "EU (Stockholm)",
+            "eu-south-1": "Europe (Milan)",
+            "eu-south-2": "Europe (Spain)",
+            "il-central-1": "Israel (Tel Aviv)",
+            "me-south-1": "Middle East (Bahrain)",
+            "me-central-1": "Middle East (UAE)",
+            "sa-east-1": "South America (Sao Paulo)",
+        }
+
+    @staticmethod
+    def _select_compute_ondemand_product(price_list: list[str], instance_type: str) -> dict:
+        for raw_item in price_list:
+            item = json.loads(raw_item)
+            product = item.get("product", {})
+            attributes = product.get("attributes", {})
+            if product.get("productFamily") != "Compute Instance":
+                continue
+            if attributes.get("instanceType") != instance_type:
+                continue
+            if item.get("terms", {}).get("OnDemand"):
+                return item
+        raise RuntimeError(f"No On-Demand compute product found for instance type '{instance_type}'.")
+
+    @staticmethod
+    def _extract_hourly_ondemand_price(on_demand_terms: dict) -> float:
+        for term in on_demand_terms.values():
+            dimensions = term.get("priceDimensions", {})
+            for dimension in dimensions.values():
+                unit = dimension.get("unit", "")
+                if unit != "Hrs":
+                    continue
+                price_per_unit = dimension.get("pricePerUnit", {})
+                value = price_per_unit.get("USD")
+                if value is None:
+                    continue
+                return float(value)
+        raise RuntimeError("No hourly USD On-Demand price dimension found.")
+
+    @staticmethod
+    def _parse_memory_gib(memory_text: str) -> float:
+        if not memory_text:
+            return 0.0
+        cleaned = memory_text.replace(",", "").strip()
+        if not cleaned.endswith("GiB"):
+            return 0.0
+        numeric = cleaned.replace("GiB", "").strip()
+        try:
+            return float(numeric)
+        except ValueError:
+            return 0.0
         
     def find_ebs_volume_id_for_pvc(self, pvc_name: str, namespace: str) -> str:
         self.logger.debug(f"find_ebs_volume_id_for_pvc(pvc_name: {pvc_name}, namespace: {namespace})")
@@ -141,6 +219,54 @@ class AwsClient:
 
         self.s3.upload_file(file_path, bucket_name, object_key)
 
+    def get_ec2_instance_type_pricing_details(self, instance_type: str, region_code: str) -> dict:
+        self.logger.debug(f"get_ec2_instance_type_pricing_details(instance_type: {instance_type}, region_code: {region_code})")
+        if not instance_type:
+            raise ValueError("instance_type is required.")
+        if not region_code:
+            raise ValueError("region_code is required.")
+        try:
+            region_response = self.ec2.describe_regions(RegionNames=[region_code])
+        except ClientError as exc:
+            raise RuntimeError(f"Failed to map region code '{region_code}' to AWS pricing location.") from exc
+        regions = region_response.get("Regions", [])
+        if not regions:
+            raise RuntimeError(f"Region code '{region_code}' is not valid.")
+        location = regions[0].get("RegionName")
+        region_mapping = self._build_region_location_mapping()
+        pricing_location = region_mapping.get(location)
+        if not pricing_location:
+            raise RuntimeError(f"Could not map region code '{region_code}' to AWS pricing location name.")
+        filters = [
+            {"Type": "TERM_MATCH", "Field": "instanceType", "Value": instance_type},
+            {"Type": "TERM_MATCH", "Field": "location", "Value": pricing_location},
+            {"Type": "TERM_MATCH", "Field": "tenancy", "Value": "Shared"},
+            {"Type": "TERM_MATCH", "Field": "operatingSystem", "Value": "Linux"},
+            {"Type": "TERM_MATCH", "Field": "preInstalledSw", "Value": "NA"},
+            {"Type": "TERM_MATCH", "Field": "capacitystatus", "Value": "Used"},
+        ]
+        response = self.pricing.get_products(ServiceCode="AmazonEC2", Filters=filters, FormatVersion="aws_v1", MaxResults=100)
+        price_list = response.get("PriceList", [])
+        if not price_list:
+            raise RuntimeError(f"No pricing result found for instance type '{instance_type}' in region '{region_code}'.")
+        product = self._select_compute_ondemand_product(price_list=price_list, instance_type=instance_type)
+        attributes = product["product"]["attributes"]
+        on_demand = product["terms"]["OnDemand"]
+        hourly_price = self._extract_hourly_ondemand_price(on_demand_terms=on_demand)
+        vcpu = int(attributes.get("vcpu", "0"))
+        memory_gib = self._parse_memory_gib(attributes.get("memory", "0 GiB"))
+        if vcpu <= 0:
+            raise RuntimeError(f"Invalid vCPU value for instance type '{instance_type}'.")
+        if memory_gib <= 0:
+            raise RuntimeError(f"Invalid memory value for instance type '{instance_type}'.")
+        return {
+            "instance_type": instance_type,
+            "region_code": region_code,
+            "pricing_location": pricing_location,
+            "hourly_instance_price_usd": hourly_price,
+            "vcpu": vcpu,
+            "memory_gib": memory_gib,
+        }
 
 if __name__ == "__main__":
     aws_client = AwsClient(profile_name="hape")

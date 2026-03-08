@@ -7,13 +7,13 @@ import json
 from typing import Optional
 from threading import Lock
 from datetime import datetime
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger import json
 from core.config import Config
 
 GLOBAL_LOGGER_NAME = "hape.global"
 
 
-class CustomJsonFormatter(jsonlogger.JsonFormatter):
+class CustomJsonFormatter(json.JsonFormatter):
     def parse(self):
         return [
             "timestamp",

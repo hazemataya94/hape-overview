@@ -9,3 +9,4 @@ These files define how agents should reason about safety, architecture, and codi
 - [tool-contract.md](tool-contract.md) - minimal contract for agent-safe tools.
 - [architecture.md](architecture.md) - architecture workflow, layering responsibilities, and guardrails.
 - [coding.md](coding.md) - coding constraints, naming, typing, logging, and documentation requirements.
+- [testing.md](testing.md) - local-first testing rules with cost-minimizing defaults.

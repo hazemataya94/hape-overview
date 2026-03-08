@@ -10,7 +10,7 @@ Apply these rules when changing code in this repository.
 
 # Function and class organization
 - Use blank lines to separate logical code sections.
-- In classes, place private methods before public methods.
+- Always, Hard Rule: In classes, place private methods before public methods.
 - For any newly created Python module, include an `if __name__ == "__main__":` block that exercises all public functions; if it doesn’t exist, add it.
 - For new classes, define default values as class-level constants and reference them in `__init__` defaults.
 
@@ -28,6 +28,7 @@ Apply these rules when changing code in this repository.
 
 # Runtime and command output
 - Use the HAPE virtual environment for Python execution.
+- Hard rule: In `hape-framework`, every command that runs Python files or Python modules must use `.venv/bin/python` (never `python` or `python3`).
 - When printing run commands for users, assume repository root (no `cd`) and use `.venv/bin/python main.py` unless the task requires a different entry point.
 - In CLI files (`cli/*.py`), include `required`, `default`, and `help` for each `add_argument` call when applicable.
 - In CLI files (`cli/*.py`), write all `add_argument` calls in multiline form.
@@ -47,3 +48,4 @@ Apply these rules when changing code in this repository.
 
 # Mandatory self-check before final response
 - Before final response, scan all edited Python files and fix every function/class signature that is multi-line while length is <= 200 characters.
+- After running all code checks, always run `.venv/bin/python scripts/check_hape_rules.py` as a final validation step and fix all reported violations before final response.

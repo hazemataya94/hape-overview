@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-with-requests
+  namespace: cost-a
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-with-requests
+  template:
+    metadata:
+      labels:
+        app: api-with-requests
+    spec:
+      nodeSelector:
+        node.kubernetes.io/instance-type: m6i.large
+      containers:
+        - name: app
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-no-replicas
+  namespace: cost-b
+spec:
+  selector:
+    matchLabels:
+      app: api-no-replicas
+  template:
+    metadata:
+      labels:
+        app: api-no-replicas
+    spec:
+      nodeSelector:
+        node.kubernetes.io/instance-type: c6i.large
+      containers:
+        - name: app
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 100m
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-cpu-only
+  namespace: cost-b
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api-cpu-only
+  template:
+    metadata:
+      labels:
+        app: api-cpu-only
+    spec:
+      nodeSelector:
+        node.kubernetes.io/instance-type: c6i.large
+      containers:
+        - name: app
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 400m
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-memory-only
+  namespace: cost-b
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-memory-only
+  template:
+    metadata:
+      labels:
+        app: api-memory-only
+    spec:
+      nodeSelector:
+        node.kubernetes.io/instance-type: r6i.large
+      containers:
+        - name: app
+          image: nginx:1.27
+          resources:
+            requests:
+              memory: 2Gi

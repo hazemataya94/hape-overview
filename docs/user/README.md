@@ -14,5 +14,6 @@ Use these docs to run commands, configure HAPE, and execute supported integratio
 - [gitlab.md](gitlab.md) - GitLab automation usage.
 - [grafana.md](grafana.md) - Grafana datasources report usage.
 - [jira.md](jira.md) - Jira comment automation usage.
+- [eks-deployment-cost.md](eks-deployment-cost.md) - EKS deployment and statefulset cost report usage.
 - [kubernetes.md](kubernetes.md) - Kubernetes ESO export workflow.
 - [markdown.md](markdown.md) - Markdown table import/export usage.

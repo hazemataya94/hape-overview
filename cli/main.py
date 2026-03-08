@@ -7,6 +7,7 @@ from core.errors.handler import ErrorHandler
 from cli.commands.config_commands import ConfigCommands
 from cli.commands.confluence_commands import ConfluenceCommands
 from cli.commands.csv_commands import CsvCommands
+from cli.commands.eks_deployment_cost_commands import EksDeploymentCostCommands
 from cli.commands.gitlab_commands import GitLabCommands
 from cli.commands.jira_commands import JiraCommands
 from cli.commands.markdown_commands import MarkdownCommands
@@ -26,6 +27,13 @@ class _HapeArgumentParser(argparse.ArgumentParser):
         self.exit(2, f"\nerror: {message}\n")
 
 class CLI:
+    @staticmethod
+    def _get_version() -> str:
+        try:
+            return metadata.version("hape")
+        except metadata.PackageNotFoundError:
+            return "unknown"
+
     @staticmethod
     def build_parser() -> argparse.ArgumentParser:
         version = CLI._get_version()
@@ -60,6 +68,7 @@ class CLI:
         JiraCommands.register(subparsers)
         ConfluenceCommands.register(subparsers)
         CsvCommands.register(subparsers)
+        EksDeploymentCostCommands.register(subparsers)
         MarkdownCommands.register(subparsers)
 
         return parser
@@ -80,13 +89,6 @@ class CLI:
         except Exception as exc:
             exit_code = ErrorHandler.handle(exc)
             raise SystemExit(exit_code)
-
-    @staticmethod
-    def _get_version() -> str:
-        try:
-            return metadata.version("hape")
-        except metadata.PackageNotFoundError:
-            return "unknown"
 
 def main() -> None:
     CLI.run()

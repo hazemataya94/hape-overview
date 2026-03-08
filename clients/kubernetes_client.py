@@ -2,6 +2,7 @@ import kubernetes.config
 import kubernetes.client
 import re
 import time
+from collections import Counter
 from typing import Any, Dict, List
 
 from core.logging import LocalLogging
@@ -66,10 +67,155 @@ class KubernetesClient:
         raise AttributeError("Neither CoreV1Api nor PolicyV1Api exposes create_namespaced_pod_eviction() in installed kubernetes client.")
 
     @staticmethod
+    def _parse_cpu_cores(cpu_text: str | None) -> float:
+        if not cpu_text:
+            return 0.0
+        value = cpu_text.strip()
+        if not value:
+            return 0.0
+        if value.endswith("m"):
+            return float(value[:-1]) / 1000.0
+        if value.endswith("u"):
+            return float(value[:-1]) / 1_000_000.0
+        if value.endswith("n"):
+            return float(value[:-1]) / 1_000_000_000.0
+        return float(value)
+
+    @staticmethod
+    def _parse_memory_gib(memory_text: str | None) -> float:
+        if not memory_text:
+            return 0.0
+        value = memory_text.strip()
+        if not value:
+            return 0.0
+        unit_factors = {
+            "Ki": 1.0 / (1024.0 ** 2),
+            "Mi": 1.0 / 1024.0,
+            "Gi": 1.0,
+            "Ti": 1024.0,
+            "Pi": 1024.0 ** 2,
+            "Ei": 1024.0 ** 3,
+            "K": 1000.0 / (1024.0 ** 3),
+            "M": (1000.0 ** 2) / (1024.0 ** 3),
+            "G": (1000.0 ** 3) / (1024.0 ** 3),
+            "T": (1000.0 ** 4) / (1024.0 ** 3),
+            "P": (1000.0 ** 5) / (1024.0 ** 3),
+            "E": (1000.0 ** 6) / (1024.0 ** 3),
+        }
+        for unit, factor in unit_factors.items():
+            if value.endswith(unit):
+                return float(value[:-len(unit)]) * factor
+        return float(value) / (1024.0 ** 3)
+
+    def _sum_container_requests(self, containers: list) -> tuple[float, float]:
+        cpu_total = 0.0
+        memory_total = 0.0
+        for container in containers or []:
+            resources = container.resources
+            requests = resources.requests if resources else None
+            if not requests:
+                continue
+            cpu_total += self._parse_cpu_cores(requests.get("cpu"))
+            memory_total += self._parse_memory_gib(requests.get("memory"))
+        return cpu_total, memory_total
+
+    @staticmethod
+    def _build_label_selector(match_labels: dict[str, str]) -> str:
+        if not match_labels:
+            return ""
+        selector_parts = [f"{key}={value}" for key, value in sorted(match_labels.items())]
+        return ",".join(selector_parts)
+
+    @staticmethod
+    def _get_node_instance_type_label(node) -> str | None:
+        labels = node.metadata.labels if node and node.metadata and node.metadata.labels else {}
+        return labels.get("node.kubernetes.io/instance-type") or labels.get("beta.kubernetes.io/instance-type")
+
+    def _collect_deployment_request_details(self, namespace: str) -> list[dict[str, Any]]:
+        deployments = self.apps_v1.list_namespaced_deployment(namespace=namespace)
+        items: list[dict[str, Any]] = []
+        for deployment in deployments.items:
+            replicas = deployment.spec.replicas
+            containers = deployment.spec.template.spec.containers or []
+            cpu_request_cores_per_pod, memory_request_gib_per_pod = self._sum_container_requests(containers=containers)
+            items.append(
+                {
+                    "resource_type": "Deployment",
+                    "namespace": namespace,
+                    "name": deployment.metadata.name,
+                    "replicas": replicas,
+                    "selector_match_labels": deployment.spec.selector.match_labels or {},
+                    "cpu_request_cores_per_pod": cpu_request_cores_per_pod,
+                    "memory_request_gib_per_pod": memory_request_gib_per_pod,
+                }
+            )
+        return items
+
+    def _collect_statefulset_request_details(self, namespace: str) -> list[dict[str, Any]]:
+        statefulsets = self.apps_v1.list_namespaced_stateful_set(namespace=namespace)
+        items: list[dict[str, Any]] = []
+        for statefulset in statefulsets.items:
+            replicas = statefulset.spec.replicas
+            containers = statefulset.spec.template.spec.containers or []
+            cpu_request_cores_per_pod, memory_request_gib_per_pod = self._sum_container_requests(containers=containers)
+            items.append(
+                {
+                    "resource_type": "StatefulSet",
+                    "namespace": namespace,
+                    "name": statefulset.metadata.name,
+                    "replicas": replicas,
+                    "selector_match_labels": statefulset.spec.selector.match_labels or {},
+                    "cpu_request_cores_per_pod": cpu_request_cores_per_pod,
+                    "memory_request_gib_per_pod": memory_request_gib_per_pod,
+                }
+            )
+        return items
+
+    @staticmethod
     def list_contexts():
         LocalLogging.get_logger("hape.kubernetes_client").debug("list_contexts()")
         contexts, _ = kubernetes.config.list_kube_config_contexts()
         return [context["name"] for context in contexts or []]
+
+    def list_namespaces(self) -> list[str]:
+        self.logger.debug("list_namespaces()")
+        response = self.core_v1.list_namespace()
+        return [item.metadata.name for item in response.items if item.metadata and item.metadata.name]
+
+    def list_replica_workload_request_details(self, resource_types: list[str], namespaces: list[str] | None = None) -> list[dict[str, Any]]:
+        self.logger.debug(f"list_replica_workload_request_details(resource_types: {resource_types}, namespaces: {namespaces})")
+        target_namespaces = namespaces if namespaces else self.list_namespaces()
+        items: list[dict[str, Any]] = []
+        for namespace in target_namespaces:
+            if "Deployment" in resource_types:
+                items.extend(self._collect_deployment_request_details(namespace=namespace))
+            if "StatefulSet" in resource_types:
+                items.extend(self._collect_statefulset_request_details(namespace=namespace))
+        return items
+
+    def get_workload_instance_type_from_pods(self, namespace: str, selector_match_labels: dict[str, str]) -> str | None:
+        self.logger.debug(
+            f"get_workload_instance_type_from_pods(namespace: {namespace}, selector_match_labels: {selector_match_labels})"
+        )
+        label_selector = self._build_label_selector(match_labels=selector_match_labels)
+        if not label_selector:
+            return None
+        pods = self.core_v1.list_namespaced_pod(namespace=namespace, label_selector=label_selector)
+        node_instance_type_counter: Counter[str] = Counter()
+        node_cache: dict[str, str | None] = {}
+        for pod in pods.items:
+            node_name = pod.spec.node_name if pod.spec else None
+            if not node_name:
+                continue
+            if node_name not in node_cache:
+                node = self.core_v1.read_node(node_name)
+                node_cache[node_name] = self._get_node_instance_type_label(node=node)
+            instance_type = node_cache[node_name]
+            if instance_type:
+                node_instance_type_counter[instance_type] += 1
+        if not node_instance_type_counter:
+            return None
+        return node_instance_type_counter.most_common(1)[0][0]
 
     def get_statefulset(self, name, namespace):
         self.logger.debug(f"get_statefulset(name: {name}, namespace: {namespace})")

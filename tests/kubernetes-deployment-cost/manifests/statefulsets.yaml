@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-headless
+  namespace: cost-a
+spec:
+  clusterIP: None
+  selector:
+    app: db
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-headless
+  namespace: cost-b
+spec:
+  clusterIP: None
+  selector:
+    app: db-no-requests
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-with-requests
+  namespace: cost-a
+spec:
+  serviceName: db-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: nginx:1.27
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-no-requests
+  namespace: cost-b
+spec:
+  serviceName: db-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-no-requests
+  template:
+    metadata:
+      labels:
+        app: db-no-requests
+    spec:
+      containers:
+        - name: db
+          image: nginx:1.27
