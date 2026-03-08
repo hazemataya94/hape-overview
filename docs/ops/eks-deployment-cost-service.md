@@ -78,7 +78,7 @@ flowchart TD
 - Currency and aggregate outputs are rounded to 6 decimal places.
 
 ## Operational assumptions
-- The model uses Kubernetes `requests`, not actual runtime usage.
+- The model uses Kubernetes pods `requests` values, not actual runtime usage.
 - Missing CPU or memory requests are treated as zero.
 - If a workload does not expose replicas, the service treats it as one replica for calculations.
 - Instance type derivation depends on pods being scheduled and discoverable from workload selector labels.
