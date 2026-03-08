@@ -61,6 +61,65 @@ graph TD
 - Execute operational actions (e.g., remediation, housekeeping, rollout steps).
 - Provide a single, auditable execution path (CLI as the choke point).
 
+### Architecture
+
+#### Layers
+- **CLI**: Argument parsing and user input handling. Commands call services only.
+- **Services**: Domain logic that orchestrates one or more clients to perform automation tasks.
+- **Clients**: Low-level adapters for external systems (Jira, Confluence, GitLab, AWS, Kubernetes).
+- **Core**: Cross-cutting infrastructure (configuration, logging, centralized error handling). Shared across all layers.
+- **Utils**: Shared utilities that are not domain-specific (file management, helpers). Shared across all layers.
+  - Formatters live under `utils/formatters/` and are split by target system.
+
+#### Layer Restrictions
+- CLI must not call clients directly. All external access goes through services.
+- Services may call multiple clients, but clients must not call services.
+- Clients must not call other clients.
+- Core and utils are reusable by any layer, but should not depend on services or CLI.
+- Clients should not import CLI or service code.
+- Development-only dependencies must live in `requirements-dev.txt` and be installed in the `.venv` explicitly (do not auto-install in Make targets).
+- Configuration is loaded from JSON via `core/config.py`. CLI passes `--config-file-path` to set the config path.
+
+#### General Flow
+```mermaid
+flowchart TD
+    userNode[Developer/Engineer] --> cliLayer[CLI Commands]
+    cliLayer --> serviceLayer[Services]
+    serviceLayer --> clientLayer[Clients]
+    clientLayer --> externalLayer[External APIs]
+```
+
+```mermaid
+flowchart TD
+    coreLayer[Core]
+    utilsLayer[Utils]
+```
+
+Core and utils are shared across all layers.
+
+#### Directory Layout
+- `cli/` → CLI entry and command modules
+- `services/` → Domain services (e.g., `changelog_service.py`)
+- `clients/` → API clients (e.g., `jira_client.py`, `confluence_client.py`)
+- `core/` → Config/logging
+- `utils/` → File, shared helpers, formatters
+- `docs/` → Architecture and future documentation
+
+#### Naming Conventions
+- Clients: `*_client.py`
+- Services: `*_service.py`
+- CLI commands: `*_commands.py`
+
+#### Example Responsibility Split
+- CLI: `jira_commands.py` parses `issue_key`
+- Service: `jira_service.py` chooses which Jira API method to call
+- Client: `jira_client.py` performs HTTP requests and returns JSON
+
+#### Configuration
+- Default config path: `~/.idap/config.json`
+- Create config from `.env`: `config init-config-file`
+- Commands can override path using `--config-file-path`
+
 ---
 
 ## Observation Platform

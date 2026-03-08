@@ -16,6 +16,25 @@ class AwsClient:
         self.s3 = self.session.client("s3")
         self.region_name = self.session.region_name or self.ec2.meta.region_name
         self.logger = LocalLogging.get_logger("hape.aws_client")
+        
+    def find_ebs_volume_id_for_pvc(self, pvc_name: str, namespace: str) -> str:
+        self.logger.debug(f"find_ebs_volume_id_for_pvc(pvc_name: {pvc_name}, namespace: {namespace})")
+        filters = [{"Name": "tag:kubernetes.io/created-for/pvc/name", "Values": [pvc_name]}, {"Name": "tag:kubernetes.io/created-for/pvc/namespace", "Values": [namespace]}]
+        response = self.ec2.describe_volumes(Filters=filters)
+        volumes = response.get("Volumes", [])
+        if not volumes:
+            raise RuntimeError(f"No EBS volumes found for PVC '{pvc_name}' in namespace '{namespace}'.")
+        if len(volumes) > 1:
+            volume_ids = [volume.get("VolumeId") for volume in volumes]
+            raise RuntimeError("Multiple EBS volumes found for PVC " f"'{pvc_name}': {volume_ids}. Refine filters or check PVC.")
+        volume_id = volumes[0]["VolumeId"]
+        return volume_id
+
+    def create_ebs_volume_snapshot(self, volume_id: str, name: str, description: str) -> str:
+        self.logger.debug(f"create_ebs_volume_snapshot(volume_id: {volume_id}, name: {name}, description: {description})")
+        response = self.ec2.create_snapshot(VolumeId=volume_id, Description=description, TagSpecifications=[{"ResourceType": "snapshot", "Tags": [{"Key": "Name", "Value": name}]}])
+        snapshot_id = response["SnapshotId"]
+        return snapshot_id
 
     def get_region_name(self) -> str:
         self.logger.debug("get_region_name()")

@@ -7,6 +7,12 @@ ERROR_MESSAGES = {
     "GITLAB_GET_GROUP_PROJECTS_FAILED": "Failed to fetch GitLab group projects for group_id={group_id}.",
     "GITLAB_GET_GROUP_MR_FAILED": "Failed to fetch GitLab merge requests for group_id={group_id}.",
     "GITLAB_GET_PROJECT_MR_FAILED": "Failed to fetch GitLab merge requests for project_id={project_id}.",
+    "GITLAB_SSH_TEST_FAILED": "SSH connectivity test failed for domain {domain}: {error}",
+    "GITLAB_CLONE_REPOSITORY_FAILED": "Failed to clone repository {ssh_url}: {error}",
+    "GITLAB_GIT_STATUS_FAILED": "Failed to check git status for repository {repo_path}: {error}",
+    "GITLAB_GIT_DIRTY": "Repository has uncommitted changes: {repo_path}",
+    "GITLAB_CREATE_BRANCH_FAILED": "Failed to create branch {branch_name} in repository {repo_path}: {error}",
+    "GITLAB_PUSH_BRANCH_FAILED": "Failed to push branch {branch_name} in repository {repo_path}: {error}",
 }
 
 

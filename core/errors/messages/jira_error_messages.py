@@ -7,6 +7,7 @@ ERROR_MESSAGES = {
     "JIRA_ADD_COMMENT_FAILED": "Failed to add Jira comment for '{issue_key}'.",
     "JIRA_ADD_ATTACHMENT_FAILED": "Failed to add Jira attachment for '{issue_key}'.",
     "JIRA_MERMAID_RENDER_FAILED": "Failed to render Mermaid diagram for Jira comment. Install `mmdc` (npm @mermaid-js/mermaid-cli) or Docker.",
+    "JIRA_COMMENT_BODY_TOO_LONG": "Jira comment body exceeds maximum allowed length ({max_length} characters). Current length: {current_length} characters.",
 }
 
 
