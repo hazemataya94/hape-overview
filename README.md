@@ -30,7 +30,7 @@ This repository is **not licensed**. No permission is granted to use, copy, modi
 Contributions are not accepted at the moment.
 
 ## Architecture
-- [Architecture Document](docs/Architecture.md)
+- [Architecture Document](docs/architecture.md)
 
 ## Documentation
 - [Documentation Directory](docs/README.md)
