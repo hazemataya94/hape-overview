@@ -1,0 +1,7 @@
+resource_type,namespace,name,instance_type,replicas,cpu_request_cores_per_pod,memory_request_gib_per_pod,total_cpu_request_cores,total_memory_request_gib,usd_per_vcpu_hour,usd_per_gib_hour,hourly_cpu_cost_usd,hourly_memory_cost_usd,max_hourly_cost_usd,daily_cost_usd,monthly_cost_usd,yearly_cost_usd
+Deployment,cost-b,api-cpu-only,c6i.large,3,0.4,0.0,1.2000000000000002,0.0,0.06,0.03,0.072,0.0,0.072,1.728,51.84,630.72
+Deployment,cost-b,api-memory-only,r6i.large,2,0.0,2.0,0.0,4.0,0.08,0.01,0.0,0.04,0.04,0.96,28.8,350.4
+StatefulSet,cost-a,db-with-requests,c6i.large,1,0.5,0.5,0.5,0.5,0.06,0.03,0.03,0.015,0.03,0.72,21.6,262.8
+Deployment,cost-b,api-no-replicas,c6i.large,1,0.1,1.0,0.1,1.0,0.06,0.03,0.006,0.03,0.03,0.72,21.6,262.8
+Deployment,cost-a,api-with-requests,m6i.large,2,0.2,0.25,0.4,0.5,0.06,0.015,0.024,0.0075,0.024,0.576,17.28,210.24
+StatefulSet,cost-b,db-no-requests,c6i.large,1,0.0,0.0,0.0,0.0,0.06,0.03,0.0,0.0,0.0,0.0,0.0,0.0

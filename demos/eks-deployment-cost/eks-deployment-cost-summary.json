@@ -1,0 +1,166 @@
+{
+    "metadata": {
+        "generated_at_utc": "2026-03-09T03:15:26.814844+00:00",
+        "kube_context": "kind-hape-eks-cost-test",
+        "aws_region": "eu-central-1",
+        "namespaces": [
+            "cost-a",
+            "cost-b"
+        ],
+        "resource_types": [
+            "Deployment",
+            "StatefulSet"
+        ],
+        "top_n": 20
+    },
+    "summary": {
+        "workload_count": 6,
+        "total_cpu_request_cores": 2.2,
+        "total_memory_request_gib": 6.0,
+        "hourly_cpu_cost_usd": 0.132,
+        "hourly_memory_cost_usd": 0.0925,
+        "max_hourly_cost_usd": 0.196,
+        "daily_cost_usd": 4.704,
+        "monthly_cost_usd": 141.12,
+        "yearly_cost_usd": 1716.96
+    },
+    "top_costing_workloads": [
+        {
+            "resource_type": "Deployment",
+            "namespace": "cost-b",
+            "name": "api-cpu-only",
+            "instance_type": "c6i.large",
+            "replicas": 3,
+            "cpu_request_cores_per_pod": 0.4,
+            "memory_request_gib_per_pod": 0.0,
+            "total_cpu_request_cores": 1.2000000000000002,
+            "total_memory_request_gib": 0.0,
+            "usd_per_vcpu_hour": 0.06,
+            "usd_per_gib_hour": 0.03,
+            "hourly_cpu_cost_usd": 0.072,
+            "hourly_memory_cost_usd": 0.0,
+            "max_hourly_cost_usd": 0.072,
+            "daily_cost_usd": 1.728,
+            "monthly_cost_usd": 51.84,
+            "yearly_cost_usd": 630.72
+        },
+        {
+            "resource_type": "Deployment",
+            "namespace": "cost-b",
+            "name": "api-memory-only",
+            "instance_type": "r6i.large",
+            "replicas": 2,
+            "cpu_request_cores_per_pod": 0.0,
+            "memory_request_gib_per_pod": 2.0,
+            "total_cpu_request_cores": 0.0,
+            "total_memory_request_gib": 4.0,
+            "usd_per_vcpu_hour": 0.08,
+            "usd_per_gib_hour": 0.01,
+            "hourly_cpu_cost_usd": 0.0,
+            "hourly_memory_cost_usd": 0.04,
+            "max_hourly_cost_usd": 0.04,
+            "daily_cost_usd": 0.96,
+            "monthly_cost_usd": 28.8,
+            "yearly_cost_usd": 350.4
+        },
+        {
+            "resource_type": "StatefulSet",
+            "namespace": "cost-a",
+            "name": "db-with-requests",
+            "instance_type": "c6i.large",
+            "replicas": 1,
+            "cpu_request_cores_per_pod": 0.5,
+            "memory_request_gib_per_pod": 0.5,
+            "total_cpu_request_cores": 0.5,
+            "total_memory_request_gib": 0.5,
+            "usd_per_vcpu_hour": 0.06,
+            "usd_per_gib_hour": 0.03,
+            "hourly_cpu_cost_usd": 0.03,
+            "hourly_memory_cost_usd": 0.015,
+            "max_hourly_cost_usd": 0.03,
+            "daily_cost_usd": 0.72,
+            "monthly_cost_usd": 21.6,
+            "yearly_cost_usd": 262.8
+        },
+        {
+            "resource_type": "Deployment",
+            "namespace": "cost-b",
+            "name": "api-no-replicas",
+            "instance_type": "c6i.large",
+            "replicas": 1,
+            "cpu_request_cores_per_pod": 0.1,
+            "memory_request_gib_per_pod": 1.0,
+            "total_cpu_request_cores": 0.1,
+            "total_memory_request_gib": 1.0,
+            "usd_per_vcpu_hour": 0.06,
+            "usd_per_gib_hour": 0.03,
+            "hourly_cpu_cost_usd": 0.006,
+            "hourly_memory_cost_usd": 0.03,
+            "max_hourly_cost_usd": 0.03,
+            "daily_cost_usd": 0.72,
+            "monthly_cost_usd": 21.6,
+            "yearly_cost_usd": 262.8
+        },
+        {
+            "resource_type": "Deployment",
+            "namespace": "cost-a",
+            "name": "api-with-requests",
+            "instance_type": "m6i.large",
+            "replicas": 2,
+            "cpu_request_cores_per_pod": 0.2,
+            "memory_request_gib_per_pod": 0.25,
+            "total_cpu_request_cores": 0.4,
+            "total_memory_request_gib": 0.5,
+            "usd_per_vcpu_hour": 0.06,
+            "usd_per_gib_hour": 0.015,
+            "hourly_cpu_cost_usd": 0.024,
+            "hourly_memory_cost_usd": 0.0075,
+            "max_hourly_cost_usd": 0.024,
+            "daily_cost_usd": 0.576,
+            "monthly_cost_usd": 17.28,
+            "yearly_cost_usd": 210.24
+        },
+        {
+            "resource_type": "StatefulSet",
+            "namespace": "cost-b",
+            "name": "db-no-requests",
+            "instance_type": "c6i.large",
+            "replicas": 1,
+            "cpu_request_cores_per_pod": 0.0,
+            "memory_request_gib_per_pod": 0.0,
+            "total_cpu_request_cores": 0.0,
+            "total_memory_request_gib": 0.0,
+            "usd_per_vcpu_hour": 0.06,
+            "usd_per_gib_hour": 0.03,
+            "hourly_cpu_cost_usd": 0.0,
+            "hourly_memory_cost_usd": 0.0,
+            "max_hourly_cost_usd": 0.0,
+            "daily_cost_usd": 0.0,
+            "monthly_cost_usd": 0.0,
+            "yearly_cost_usd": 0.0
+        }
+    ],
+    "pricing_by_instance_type": {
+        "m6i.large": {
+            "hourly_instance_price_usd": 0.12,
+            "vcpu": 2,
+            "memory_gib": 8.0,
+            "usd_per_vcpu_hour": 0.06,
+            "usd_per_gib_hour": 0.015
+        },
+        "c6i.large": {
+            "hourly_instance_price_usd": 0.12,
+            "vcpu": 2,
+            "memory_gib": 4.0,
+            "usd_per_vcpu_hour": 0.06,
+            "usd_per_gib_hour": 0.03
+        },
+        "r6i.large": {
+            "hourly_instance_price_usd": 0.16,
+            "vcpu": 2,
+            "memory_gib": 16.0,
+            "usd_per_vcpu_hour": 0.08,
+            "usd_per_gib_hour": 0.01
+        }
+    }
+}
