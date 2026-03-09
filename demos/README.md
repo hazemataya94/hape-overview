@@ -1,0 +1,12 @@
+# Demos
+
+## Purpose
+This directory contains sample generated outputs from HAPE framework features.
+Use these files as quick references for report structure and expected fields.
+
+## Available demos
+- [EKS deployment cost demo](eks-deployment-cost/README.md)
+
+## Notes
+- Demo files are examples and may not reflect your environment.
+- Regenerate outputs in your own setup to validate current behavior.

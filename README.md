@@ -29,6 +29,9 @@ This repository is **not licensed**. No permission is granted to use, copy, modi
 ## Contributions
 Contributions are not accepted at the moment.
 
+## Demos
+- [Demos Directory](demos/README.md)
+
 ## Architecture
 - [Architecture Document](docs/architecture.md)
 
