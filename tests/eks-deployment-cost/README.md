@@ -25,10 +25,10 @@ It does not create or require an EKS cluster.
 
 ## Start KIND Cluster
 ```bash
-kind create cluster --config tests/kubernetes-deployment-cost/kind.yaml
+kind create cluster --config tests/eks-deployment-cost/kind.yaml
 ```
 
 ## Run
 ```bash
-HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/kubernetes-deployment-cost -q -s
+HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -q -s
 ```

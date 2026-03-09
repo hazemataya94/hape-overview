@@ -104,5 +104,5 @@ hape eks-deployment-cost report \
 5. Confirm metadata fields reflect requested namespace, resource type, region, and `top_n`.
 
 ## Test coverage reference
-- Functional scenario and expected behavior are covered by `tests/kubernetes-deployment-cost/test_eks_deployment_cost_functional.py`.
-- Local cluster setup and manifests are under `tests/kubernetes-deployment-cost/`.
+- Functional scenario and expected behavior are covered by `tests/eks-deployment-cost/test_eks_deployment_cost_functional.py`.
+- Local cluster setup and manifests are under `tests/eks-deployment-cost/`.
