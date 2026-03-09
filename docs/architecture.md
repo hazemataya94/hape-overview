@@ -137,6 +137,31 @@ Core and utils are shared across all layers.
   - Grafana is chosen as the visualization tool.
   - Prometheus exporters are the chosen metrics collectors.
 
+### Architecture
+
+#### Layers
+- **Exporters**: Runtime Python modules that collect metrics from external systems and expose Prometheus metrics.
+- **Dashboards**: Grafana dashboard definitions (JSON) versioned as code.
+- **Manifests**: Deployment artifacts for Prometheus, Grafana, and dashboard provisioning.
+
+#### Layer Restrictions
+- Exporters must contain collection and metrics exposition logic only and must not contain dashboard or deployment manifest content.
+- Dashboards must contain visualization definitions only and must not contain runtime exporter logic.
+- Manifests must reference exporters and dashboards as deployable assets and must not duplicate exporter logic.
+- Exporters may use core and utils modules, but should not import CLI command modules.
+
+#### Directory Layout
+- `exporters/` -> Service-specific exporters (e.g., `eks_deployment_cost_exporter.py`).
+- `dashboards/` -> Grafana dashboard files (e.g., `eks-deployment-cost.json`).
+- `manifests/grafana/` -> Grafana deployment and provisioning manifests.
+- `manifests/prometheus/` -> Prometheus deployment and scrape configuration manifests.
+
+#### Naming Conventions
+- Exporters: `*_exporter.py`
+- Dashboard files: `*.json` in kebab-case by domain
+- Grafana manifest files: `*.yaml` grouped under `manifests/grafana/`
+- Prometheus manifest files: `*.yaml` grouped under `manifests/prometheus/`
+
 ---
 
 ## DevOps Platform Agent OR Rule Engine AI (TBD)
