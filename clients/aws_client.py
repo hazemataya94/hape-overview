@@ -8,9 +8,9 @@ from core.logging import LocalLogging
 
 
 class AwsClient:
-    def __init__(self, profile_name: str) -> None:
+    def __init__(self, profile_name: str | None = None) -> None:
         self.profile_name = profile_name
-        self.session = boto3.Session(profile_name=profile_name)
+        self.session = boto3.Session(profile_name=profile_name) if profile_name else boto3.Session()
         self.ec2 = self.session.client("ec2")
         self.eks = self.session.client("eks")
         self.autoscaling = self.session.client("autoscaling")

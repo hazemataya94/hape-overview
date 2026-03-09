@@ -19,5 +19,5 @@ HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -q -
 The output files in this directory were copied from the generated test outputs.
 
 ## Related documentation
-- [Service logic and assumptions](../../docs/ops/eks-deployment-cost-service.md)
+- [Service logic and assumptions](../../docs/ops/exporters/eks-deployment-cost-service.md)
 - [Functional tests](../../tests/eks-deployment-cost/README.md)

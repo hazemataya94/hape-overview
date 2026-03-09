@@ -1,19 +1,19 @@
 import os
 import sys
 import shutil
+import json
 import logging
 import logging.config
-import json
 from typing import Optional
 from threading import Lock
 from datetime import datetime
-from pythonjsonlogger import json
+from pythonjsonlogger import json as json_logger
 from core.config import Config
 
 GLOBAL_LOGGER_NAME = "hape.global"
 
 
-class CustomJsonFormatter(json.JsonFormatter):
+class CustomJsonFormatter(json_logger.JsonFormatter):
     def parse(self):
         return [
             "timestamp",

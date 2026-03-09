@@ -4,6 +4,8 @@
 This directory contains operational guidance and automation notes.
 Use these docs for ongoing operations, troubleshooting, and release-related tasks.
 
-## Runbooks
+## Sections
+- [Exporter Runbooks](exporters/README.md) - exporter runtime operations.
+- [Dashboard Runbooks](dashboards/README.md) - dashboard-focused operational notes.
 - [EKS Deployment Cost Service Logic](eks-deployment-cost-service.md) - service internals, pricing logic, assumptions, and verification steps.
 

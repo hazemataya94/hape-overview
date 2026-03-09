@@ -1,6 +1,10 @@
 import csv
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+import boto3
+import kubernetes.config
 
 from clients.aws_client import AwsClient
 from clients.kubernetes_client import KubernetesClient
@@ -49,11 +53,9 @@ class EksDeploymentCostService:
         items = [item for item in raw_items if item]
         return items or None
 
-    def _validate_inputs(self, kube_context: str, aws_profile: str, output_dir: str, top_n: int, resource_types: list[str]) -> None:
+    def _validate_inputs(self, kube_context: str, output_dir: str, top_n: int, resource_types: list[str]) -> None:
         if not kube_context or not kube_context.strip():
             raise HapeValidationError(code="EDC_KUBE_CONTEXT_REQUIRED", message=get_eks_deployment_cost_error_message("EDC_KUBE_CONTEXT_REQUIRED"))
-        if not aws_profile or not aws_profile.strip():
-            raise HapeValidationError(code="EDC_AWS_PROFILE_REQUIRED", message=get_eks_deployment_cost_error_message("EDC_AWS_PROFILE_REQUIRED"))
         if not output_dir or not output_dir.strip():
             raise HapeValidationError(code="EDC_OUTPUT_DIR_REQUIRED", message=get_eks_deployment_cost_error_message("EDC_OUTPUT_DIR_REQUIRED"))
         if top_n <= 0:
@@ -116,6 +118,7 @@ class EksDeploymentCostService:
         kube_context: str,
         aws_region: str,
         namespaces: list[str] | None,
+        ignored_namespaces: list[str],
         resource_types: list[str],
         top_n: int,
         pricing_by_instance_type: dict[str, dict],
@@ -136,7 +139,8 @@ class EksDeploymentCostService:
                 "generated_at_utc": datetime.now(timezone.utc).isoformat(),
                 "kube_context": kube_context,
                 "aws_region": aws_region,
-                "namespaces": namespaces or ["*"],
+                "namespaces": namespaces if namespaces is not None else ["*"],
+                "ignored_namespaces": ignored_namespaces,
                 "resource_types": resource_types,
                 "top_n": top_n,
             },
@@ -169,14 +173,52 @@ class EksDeploymentCostService:
             writer = csv.DictWriter(csv_file, fieldnames=self.DETAILS_CSV_COLUMNS)
             writer.writeheader()
 
+    @staticmethod
+    def _resolve_kube_context(kube_context: str | None, kube_config_file: str | None) -> str:
+        if kube_context and kube_context.strip():
+            return kube_context.strip()
+        try:
+            contexts, active_context = kubernetes.config.list_kube_config_contexts(config_file=kube_config_file)
+        except Exception as exc:
+            raise HapeValidationError(
+                code="EDC_KUBE_CONTEXT_REQUIRED",
+                message=get_eks_deployment_cost_error_message("EDC_KUBE_CONTEXT_REQUIRED"),
+            ) from exc
+        if active_context and active_context.get("name"):
+            return str(active_context["name"])
+        if contexts:
+            first_context_name = contexts[0].get("name")
+            if first_context_name:
+                return str(first_context_name)
+        raise HapeValidationError(
+            code="EDC_KUBE_CONTEXT_REQUIRED",
+            message=get_eks_deployment_cost_error_message("EDC_KUBE_CONTEXT_REQUIRED"),
+        )
+
+    @staticmethod
+    def _resolve_aws_profile(aws_profile: str | None) -> str | None:
+        if aws_profile and aws_profile.strip():
+            return aws_profile.strip()
+        session = boto3.Session()
+        if session.profile_name:
+            return session.profile_name
+        return None
+
+    @staticmethod
+    def _resolve_output_dir(output_dir: str | None) -> str:
+        if output_dir and output_dir.strip():
+            return output_dir.strip()
+        return tempfile.mkdtemp(prefix="hape-eks-deployment-cost-")
+
     def generate_report(
         self,
-        kube_context: str,
-        aws_profile: str,
-        output_dir: str,
+        kube_context: str | None = None,
+        aws_profile: str | None = None,
+        output_dir: str | None = None,
         top_n: int = 20,
         resource_types_csv: str | None = None,
         namespaces_csv: str | None = None,
+        ignored_namespaces_csv: str | None = None,
         aws_region: str | None = None,
         kube_config_file: str | None = None,
     ) -> dict:
@@ -184,22 +226,31 @@ class EksDeploymentCostService:
             "generate_report("
             f"kube_context: {kube_context}, aws_profile: {aws_profile}, output_dir: {output_dir}, "
             f"top_n: {top_n}, resource_types_csv: {resource_types_csv}, namespaces_csv: {namespaces_csv}, "
-            f"aws_region: {aws_region}, kube_config_file: {kube_config_file})"
+            f"ignored_namespaces_csv: {ignored_namespaces_csv}, aws_region: {aws_region}, kube_config_file: {kube_config_file})"
         )
+        resolved_kube_context = self._resolve_kube_context(kube_context=kube_context, kube_config_file=kube_config_file)
+        resolved_aws_profile = self._resolve_aws_profile(aws_profile=aws_profile)
+        resolved_output_dir = self._resolve_output_dir(output_dir=output_dir)
         resource_types = self._normalize_csv_argument(resource_types_csv) or list(self.ALLOWED_RESOURCE_TYPES)
         namespaces = self._normalize_csv_argument(namespaces_csv)
+        ignored_namespaces = self._normalize_csv_argument(ignored_namespaces_csv) or []
         self._validate_inputs(
-            kube_context=kube_context,
-            aws_profile=aws_profile,
-            output_dir=output_dir,
+            kube_context=resolved_kube_context,
+            output_dir=resolved_output_dir,
             top_n=top_n,
             resource_types=resource_types,
         )
-        kubernetes_client = KubernetesClient(context=kube_context, config_file=kube_config_file)
-        aws_client = AwsClient(profile_name=aws_profile)
+        kubernetes_client = KubernetesClient(context=resolved_kube_context, config_file=kube_config_file)
+        aws_client = AwsClient(profile_name=resolved_aws_profile)
         effective_region = aws_region or aws_client.get_region_name()
+        ignored_namespaces_set = set(ignored_namespaces)
+        effective_namespaces = namespaces or kubernetes_client.list_namespaces()
+        effective_namespaces = [namespace for namespace in effective_namespaces if namespace not in ignored_namespaces_set]
         try:
-            workloads = kubernetes_client.list_replica_workload_request_details(resource_types=resource_types, namespaces=namespaces)
+            workloads = kubernetes_client.list_replica_workload_request_details(
+                resource_types=resource_types,
+                namespaces=effective_namespaces,
+            )
         except Exception as exc:
             raise HapeExternalError(
                 code="EDC_KUBERNETES_READ_FAILED",
@@ -241,25 +292,26 @@ class EksDeploymentCostService:
         rows = self._build_workload_cost_rows(workloads=workloads, pricing_by_instance_type=pricing_by_instance_type)
         rows_sorted = sorted(rows, key=lambda item: item["max_hourly_cost_usd"], reverse=True)
         summary = self._build_summary_report(
-            kube_context=kube_context,
+            kube_context=resolved_kube_context,
             aws_region=effective_region,
-            namespaces=namespaces,
+            namespaces=effective_namespaces,
+            ignored_namespaces=ignored_namespaces,
             resource_types=resource_types,
             top_n=top_n,
             pricing_by_instance_type=pricing_by_instance_type,
             rows_sorted=rows_sorted,
         )
-        output_path = Path(output_dir)
+        output_path = Path(resolved_output_dir)
         summary_json_path = str(output_path / "eks-deployment-cost-summary.json")
         details_csv_path = str(output_path / "eks-deployment-cost-details.csv")
         try:
-            self.file_manager.create_directory(output_dir)
+            self.file_manager.create_directory(resolved_output_dir)
             self.file_manager.write_json_file(summary_json_path, summary)
             self._write_details_csv(details_csv_path, rows_sorted)
         except Exception as exc:
             raise HapeOperationError(
                 code="EDC_REPORT_WRITE_FAILED",
-                message=get_eks_deployment_cost_error_message("EDC_REPORT_WRITE_FAILED", output_dir=output_dir),
+                message=get_eks_deployment_cost_error_message("EDC_REPORT_WRITE_FAILED", output_dir=resolved_output_dir),
             ) from exc
         return {
             "summary_json_path": summary_json_path,
