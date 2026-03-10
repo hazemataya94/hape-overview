@@ -18,7 +18,7 @@ make kind-up
 
 ## Install tools with Helmfile
 ```bash
-helmfile -f infrastructure/kubernetes/helmfile.yaml sync
+make helmfile-sync
 ```
 
 ## Delete the local cluster

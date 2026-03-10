@@ -1,10 +1,10 @@
-PYTHON ?= python3
+PYTHON ?= python
 VERSION_FILE ?= VERSION
 INSTALL_PREFIX ?=
 KIND_CLUSTER_NAME ?= hape
 KIND_CONFIG_PATH ?= infrastructure/kubernetes/kind/cluster-config.yaml
 
-.PHONY: help clean bump-version build install kind-up kind-down
+.PHONY: help clean bump-version build install kind-up helmfile-sync kind-down
 
 help: ## Show available commands.
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | \
@@ -51,6 +51,9 @@ kind-up: ## Create local kind cluster named $(KIND_CLUSTER_NAME).
 	else \
 		kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG_PATH); \
 	fi
+
+helmfile-sync: ## Sync Helmfile releases for local cluster tooling.
+	helmfile -f infrastructure/kubernetes/helmfile.yaml sync
 
 kind-down: ## Delete local kind cluster named $(KIND_CLUSTER_NAME).
 	@if kind get clusters | grep -xq "$(KIND_CLUSTER_NAME)"; then \

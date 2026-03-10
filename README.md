@@ -35,6 +35,15 @@ Contributions are not accepted at the moment.
 ## Architecture
 - [Architecture Document](docs/architecture.md)
 
+## Makefile
+- [Makefile Documentation](docs/makefile.md) - reference for Makefile variables, targets, and common workflows.
+
+To list all available Make commands and their descriptions:
+
+```bash
+make help
+```
+
 ## Documentation
 - [Documentation Directory](docs/README.md)
 

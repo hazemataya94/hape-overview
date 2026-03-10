@@ -4,6 +4,8 @@ Apply these rules when creating or updating documentation in this repository.
 
 ## Documentation updates
 - Update relevant documentation for every implemented change.
+- If a change modifies `infrastructure/`, always update corresponding pages under `docs/infra/` in the same change.
+- If a change modifies `Makefile`, always update `docs/makefile.md` in the same change.
 - Use simple, clear words and short sentences; avoid ambiguous words (`it`, `this`, `that`, `soon`, `latest`, `correct`).
 - Write explicit statements with subject, condition, and expected result; prefer simple words (`fix` over `resolve`, `use` over `utilize`).
 - For documents under `docs/ops/`, add a Mermaid flowchart when it helps provide a clear general workflow overview.
