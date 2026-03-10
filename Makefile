@@ -46,7 +46,15 @@ install: ## Install to $(INSTALL_PREFIX)/bin via pip.
 	fi
 
 kind-up: ## Create local kind cluster named $(KIND_CLUSTER_NAME).
-	kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG_PATH)
+	@if kind get clusters | grep -xq "$(KIND_CLUSTER_NAME)"; then \
+		echo "kind cluster $(KIND_CLUSTER_NAME) is already running"; \
+	else \
+		kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG_PATH); \
+	fi
 
 kind-down: ## Delete local kind cluster named $(KIND_CLUSTER_NAME).
-	kind delete cluster --name $(KIND_CLUSTER_NAME)
+	@if kind get clusters | grep -xq "$(KIND_CLUSTER_NAME)"; then \
+		kind delete cluster --name $(KIND_CLUSTER_NAME); \
+	else \
+		echo "kind cluster $(KIND_CLUSTER_NAME) is not running"; \
+	fi

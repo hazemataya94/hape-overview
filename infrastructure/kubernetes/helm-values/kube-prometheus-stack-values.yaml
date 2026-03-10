@@ -1,0 +1,163 @@
+crds:
+  enabled: true
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: false
+    etcd: false
+    configReloaders: false
+    general: false
+    k8sContainerCpuUsageSecondsTotal: true
+    k8sContainerMemoryCache: true
+    k8sContainerMemoryRss: true
+    k8sContainerMemorySwap: false
+    k8sContainerResource: true
+    k8sContainerMemoryWorkingSetBytes: true
+    k8sPodOwner: true
+    kubeApiserverAvailability: false
+    kubeApiserverBurnrate: false
+    kubeApiserverHistogram: false
+    kubeApiserverSlos: false
+    kubeControllerManager: false
+    kubelet: true
+    kubeProxy: false
+    kubePrometheusGeneral: false
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: false
+    kubernetesSystem: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeStateMetrics: true
+    network: false
+    node: true
+    nodeExporterAlerting: false
+    nodeExporterRecording: true
+    prometheus: false
+    prometheusOperator: false
+    windows: false
+
+windowsMonitoring:
+  enabled: false
+
+alertmanager:
+  enabled: true
+  serviceMonitor:
+    selfMonitor: false
+  alertmanagerSpec:
+    logLevel: error
+    replicas: 1
+    retention: 24h
+    resources:
+      requests:
+        memory: 200Mi
+      limits:
+        memory: 400Mi
+
+grafana:
+  enabled: true
+  adminUser: admin
+  adminPassword: admin
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      # Allow discovery in all namespaces for dashboards
+      searchNamespace: ALL
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+      isDefaultDatasource: true
+      name: Prometheus
+      uid: prometheus
+      prometheusServiceName: prometheus-operated
+      label: grafana_datasource
+      labelValue: "1"
+      alertmanager:
+        enabled: true
+        name: Alertmanager
+        uid: alertmanager
+        handleGrafanaManagedAlerts: false
+        implementation: prometheus
+  serviceMonitor:
+    enabled: false
+
+## Flag to disable all the kubernetes component scrapers
+kubernetesServiceMonitors:
+  enabled: true
+
+kubeApiServer:
+  enabled: false
+
+kubelet:
+  enabled: true
+
+kubeControllerManager:
+  enabled: false
+
+coreDns:
+  enabled: false
+
+kubeDns:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+prometheusOperator:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      memory: 200Mi
+  prometheusConfigReloader:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+      limits:
+        memory: 50Mi
+
+prometheus:
+  enabled: true
+  thanosService:
+    enabled: false
+  thanosServiceMonitor:
+    enabled: false
+  thanosServiceExternal:
+    enabled: false
+  thanosIngress:
+    enabled: false
+  serviceMonitor:
+    selfMonitor: false
+  prometheusSpec:
+    retention: 3d
+    retentionSize: "5GiB"
+    replicas: 1
+    logLevel: error
+    resources:
+      requests:
+        memory: 1Gi
+      limits:
+        memory: 2Gi
+    thanos: {}
+
+thanosRuler:
+  enabled: false
