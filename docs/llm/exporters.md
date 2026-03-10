@@ -21,7 +21,7 @@ Apply these rules when creating or updating Prometheus exporters in this reposit
 - Update related dashboard JSON in `dashboards/` when metric schema changes.
 
 ## Validation requirements
-- Run exporter locally with `.venv/bin/python -m exporters.<module_name>`.
+- Run exporter locally with `python -m exporters.<module_name>`.
 - Verify `/metrics`, `/metrics-catalog`, and `/healthz` responses.
 
 ## Architecture focus

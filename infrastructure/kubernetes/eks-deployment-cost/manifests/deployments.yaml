@@ -1,3 +1,5 @@
+# Test fixtures for `eks-deployment-cost` functional tests.
+# Applied by tests/eks-deployment-cost/conftest.py.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -18,17 +18,22 @@ It does not create or require an EKS cluster.
   - `topology.kubernetes.io/zone`
 
 ## Files
-- `kind.yaml` cluster definition.
-- `manifests/` test namespaces and workloads.
+- `infrastructure/kubernetes/kind/cluster-config.yaml` cluster definition.
+- `infrastructure/kubernetes/eks-deployment-cost/manifests/` test namespaces and workloads.
 - `conftest.py` cluster and manifest fixtures.
 - `test_eks_deployment_cost_functional.py` end-to-end local functional test.
 
 ## Start KIND Cluster
 ```bash
-kind create cluster --config tests/eks-deployment-cost/kind.yaml
+make kind-up
 ```
 
 ## Run
 ```bash
-HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -q -s
+HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -s
+```
+
+## Cleanup
+```bash
+make kind-down
 ```

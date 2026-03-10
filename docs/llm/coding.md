@@ -28,17 +28,10 @@ Apply these rules when changing code in this repository.
 
 # Runtime and command output
 - Use the HAPE virtual environment for Python execution.
-- Hard rule: In `hape-framework`, every command that runs Python files or Python modules must use `.venv/bin/python` (never `python` or `python3`).
-- When printing run commands for users, assume repository root (no `cd`) and use `.venv/bin/python main.py` unless the task requires a different entry point.
+- Hard rule: In `hape-framework`, command examples in documentation must use `python` (never `python3`).
 - In CLI files (`cli/*.py`), include `required`, `default`, and `help` for each `add_argument` call when applicable.
 - In CLI files (`cli/*.py`), write all `add_argument` calls in multiline form.
 - In CLI files (`cli/*.py`), `add_argument` should always define arguments as flags (no positional args) in kebab-case (for example, `--argument-name`).
-
-# Documentation requirement
-- Update relevant documentation for every implemented change.
-- Use simple, clear words and short sentences; avoid ambiguous words (`it`, `this`, `that`, `soon`, `latest`, `correct`).
-- Write explicit statements with subject, condition, and expected result; prefer simple words (`fix` over `resolve`, `use` over `utilize`).
-- For documents under `docs/ops/`, add a Mermaid flowchart when it helps provide a clear general workflow overview.
 
 # Formatting preferences
 - Hard rule (pass/fail): function and class signatures MUST stay on one line when the full signature length is <= 200 characters.
@@ -48,4 +41,4 @@ Apply these rules when changing code in this repository.
 
 # Mandatory self-check before final response
 - Before final response, scan all edited Python files and fix every function/class signature that is multi-line while length is <= 200 characters.
-- After running all code checks, always run `.venv/bin/python scripts/check_hape_rules.py` as a final validation step and fix all reported violations before final response.
+- After running all code checks, always run `python scripts/check_hape_rules.py` as a final validation step and fix all reported violations before final response.

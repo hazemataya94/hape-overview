@@ -7,9 +7,10 @@ import pytest
 
 
 TEST_ROOT = Path(__file__).resolve().parent
-KIND_CONFIG_PATH = TEST_ROOT / "kind.yaml"
-MANIFESTS_DIR = TEST_ROOT / "manifests"
-CLUSTER_NAME = "hape-eks-cost-test"
+REPO_ROOT = TEST_ROOT.parents[1]
+KIND_CONFIG_PATH = REPO_ROOT / "infrastructure" / "kubernetes" / "kind" / "cluster-config.yaml"
+TEST_MANIFESTS_DIR = REPO_ROOT / "infrastructure" / "kubernetes" / "eks-deployment-cost" / "manifests"
+CLUSTER_NAME = "hape"
 
 
 def _run(command: list[str]) -> subprocess.CompletedProcess:
@@ -87,9 +88,9 @@ def kind_cluster() -> dict[str, str | None]:
 def apply_test_manifests(kind_cluster: dict[str, str | None]) -> dict[str, str | None]:
     kube_context = str(kind_cluster["kube_context"])
     _ensure_memory_optimized_node_label(kube_context)
-    _run(["kubectl", "--context", kube_context, "apply", "-f", str(MANIFESTS_DIR / "namespaces.yaml")])
-    _run(["kubectl", "--context", kube_context, "apply", "-f", str(MANIFESTS_DIR / "deployments.yaml")])
-    _run(["kubectl", "--context", kube_context, "apply", "-f", str(MANIFESTS_DIR / "statefulsets.yaml")])
+    _run(["kubectl", "--context", kube_context, "apply", "-f", str(TEST_MANIFESTS_DIR / "namespaces.yaml")])
+    _run(["kubectl", "--context", kube_context, "apply", "-f", str(TEST_MANIFESTS_DIR / "deployments.yaml")])
+    _run(["kubectl", "--context", kube_context, "apply", "-f", str(TEST_MANIFESTS_DIR / "statefulsets.yaml")])
     _run(["kubectl", "--context", kube_context, "-n", "cost-a", "rollout", "status", "deployment/api-with-requests", "--timeout=180s"])
     _run(["kubectl", "--context", kube_context, "-n", "cost-b", "rollout", "status", "deployment/api-no-replicas", "--timeout=180s"])
     _run(["kubectl", "--context", kube_context, "-n", "cost-b", "rollout", "status", "deployment/api-cpu-only", "--timeout=180s"])

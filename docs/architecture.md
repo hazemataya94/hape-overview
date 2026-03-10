@@ -103,6 +103,7 @@ Core and utils are shared across all layers.
 - `clients/` → API clients (e.g., `jira_client.py`, `confluence_client.py`)
 - `core/` → Config/logging
 - `utils/` → File, shared helpers, formatters
+- `infrastructure/` → Local Kubernetes setup (`kind`, Helmfile) and future Terraform assets
 - `docs/` → Architecture and future documentation
 
 #### Naming Conventions

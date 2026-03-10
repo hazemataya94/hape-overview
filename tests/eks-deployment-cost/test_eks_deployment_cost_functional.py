@@ -46,7 +46,11 @@ def test_generate_report_on_kind_cluster(apply_test_manifests: dict[str, str | N
     kube_context = str(apply_test_manifests["kube_context"])
     kubeconfig_path = apply_test_manifests["kubeconfig_path"]
     output_dir = tmp_path / "eks-cost-report"
-    print(f"output_dir={output_dir}")
+    print("\n")
+    print("-" * 80)
+    print("Artifacts directory")
+    print(output_dir)
+    print("-" * 80)
     outputs = service.generate_report(
         kube_context=kube_context,
         kube_config_file=str(kubeconfig_path) if kubeconfig_path else None,

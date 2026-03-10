@@ -1,8 +1,10 @@
 PYTHON ?= python3
 VERSION_FILE ?= VERSION
 INSTALL_PREFIX ?=
+KIND_CLUSTER_NAME ?= hape
+KIND_CONFIG_PATH ?= infrastructure/kubernetes/kind/cluster-config.yaml
 
-.PHONY: help clean bump-version build install
+.PHONY: help clean bump-version build install kind-up kind-down
 
 help: ## Show available commands.
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | \
@@ -42,3 +44,9 @@ install: ## Install to $(INSTALL_PREFIX)/bin via pip.
 		echo "$$ $(PYTHON) -m pip install --upgrade --force-reinstall $$wheel"; \
 		$(PYTHON) -m pip install --upgrade --force-reinstall $$wheel; \
 	fi
+
+kind-up: ## Create local kind cluster named $(KIND_CLUSTER_NAME).
+	kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG_PATH)
+
+kind-down: ## Delete local kind cluster named $(KIND_CLUSTER_NAME).
+	kind delete cluster --name $(KIND_CLUSTER_NAME)

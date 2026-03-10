@@ -1,7 +1,7 @@
 {
     "metadata": {
         "generated_at_utc": "2026-03-09T03:15:26.814844+00:00",
-        "kube_context": "kind-hape-eks-cost-test",
+        "kube_context": "kind-hape",
         "aws_region": "eu-central-1",
         "namespaces": [
             "cost-a",

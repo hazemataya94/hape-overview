@@ -20,4 +20,5 @@ The output files in this directory were copied from the generated test outputs.
 
 ## Related documentation
 - [Service logic and assumptions](../../docs/ops/eks-deployment-cost-service.md)
+- [Local Kubernetes environment](../../infrastructure/kubernetes/README.md)
 - [Functional tests](../../tests/eks-deployment-cost/README.md)
