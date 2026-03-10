@@ -12,11 +12,21 @@ It helps you understand output schema and cost fields before running the command
 - Python dependencies installed for this project.
 - Functional test prerequisites from `tests/eks-deployment-cost/README.md` are met.
 
+## Start KIND Cluster
+```bash
+make kind-up
+```
+
 ## Generate demo outputs
 ```bash
 HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -q -s
 ```
 The output files in this directory were copied from the generated test outputs.
+
+## Stop KIND Cluster
+```bash
+make kind-down
+```
 
 ## Related documentation
 - [Service logic and assumptions](../../docs/ops/eks-deployment-cost-service.md)
