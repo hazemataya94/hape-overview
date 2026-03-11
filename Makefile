@@ -103,7 +103,7 @@ publish: build ## Publish package to public PyPI. Commit, tag, and push the vers
 	@TWINE_USERNAME=__token__ TWINE_PASSWORD="$$(cat ../../pypi.token)" twine upload dist/* \
 	&& \
 	( \
-		version=$(shell sed -n 's/version="\(.*\)",/\1/p' setup.py | tr -d " "); \
+		version=$$(cat $(VERSION_FILE)); \
 		echo ""; \
 		echo "Pypi package has been successfully published."; \
 		echo ""; \
@@ -115,10 +115,10 @@ publish: build ## Publish package to public PyPI. Commit, tag, and push the vers
 		git tag $$version; \
 		echo ""; \
 		echo "Pushing commits"; \
-		git push; \
+		git push origin main; \
 		echo ""; \
 		echo "Pushing tags"; \
-		git push --tags; \
+		git push origin --tags; \
 	) || ( \
 		echo "Upload failed. Not committing version bump."; \
 	)
