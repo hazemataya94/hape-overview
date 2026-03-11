@@ -98,3 +98,27 @@ kustomize-delete: ## Delete kustomization path passed as second make argument.
 		exit 1; \
 	fi
 	kubectl kustomize --load-restrictor=LoadRestrictionsNone "$(KUSTOMIZE_TARGET_PATH)" | kubectl delete -f -
+
+publish: build ## Publish package to public PyPI. Commit, tag, and push the version.
+	@TWINE_USERNAME=__token__ TWINE_PASSWORD="$$(cat ../../pypi.token)" twine upload dist/* \
+	&& \
+	( \
+		version=$(shell sed -n 's/version="\(.*\)",/\1/p' setup.py | tr -d " "); \
+		echo ""; \
+		echo "Pypi package has been successfully published."; \
+		echo ""; \
+		echo "Committing and tagging version $$version"; \
+		git add setup.py; \
+		git commit -m "Bump version: $$version"; \
+		echo ""; \
+		echo "Tagging version $$version"; \
+		git tag $$version; \
+		echo ""; \
+		echo "Pushing commits"; \
+		git push; \
+		echo ""; \
+		echo "Pushing tags"; \
+		git push --tags; \
+	) || ( \
+		echo "Upload failed. Not committing version bump."; \
+	)
