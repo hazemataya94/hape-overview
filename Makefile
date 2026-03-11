@@ -108,7 +108,7 @@ publish: build ## Publish package to public PyPI. Commit, tag, and push the vers
 		echo "Pypi package has been successfully published."; \
 		echo ""; \
 		echo "Committing and tagging version $$version"; \
-		git add setup.py; \
+		git add VERSION setup.py; \
 		git commit -m "Bump version: $$version"; \
 		echo ""; \
 		echo "Tagging version $$version"; \
