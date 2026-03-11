@@ -114,6 +114,7 @@ class EksDeploymentCostMetricsProvider:
                 kube_context=self.kube_context,
                 aws_profile=self.aws_profile,
                 ignored_namespaces_csv=self.ignored_namespaces_csv,
+                use_incluster_config=self.kube_context is None,
             )
             summary_path = Path(report_file_paths["summary_json_path"])
             summary_report = json.loads(summary_path.read_text(encoding="utf-8"))

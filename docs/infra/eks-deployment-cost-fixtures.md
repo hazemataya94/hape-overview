@@ -4,9 +4,10 @@
 Document Kubernetes fixture manifests used by `eks-deployment-cost` functional tests.
 
 ## Fixture files
-- `infrastructure/kubernetes/eks-deployment-cost/manifests/namespaces.yaml`
-- `infrastructure/kubernetes/eks-deployment-cost/manifests/deployments.yaml`
-- `infrastructure/kubernetes/eks-deployment-cost/manifests/statefulsets.yaml`
+- `infrastructure/kubernetes/eks-deployment-cost/kustomization.yaml`
+- `infrastructure/kubernetes/eks-deployment-cost/namespaces.yaml`
+- `infrastructure/kubernetes/eks-deployment-cost/deployments.yaml`
+- `infrastructure/kubernetes/eks-deployment-cost/statefulsets.yaml`
 
 ## How fixtures are used
 - Tests apply these manifests to create deterministic workloads in `cost-a` and `cost-b`.
@@ -16,9 +17,7 @@ Document Kubernetes fixture manifests used by `eks-deployment-cost` functional t
 Apply fixtures:
 
 ```bash
-kubectl apply -f infrastructure/kubernetes/eks-deployment-cost/manifests/namespaces.yaml
-kubectl apply -f infrastructure/kubernetes/eks-deployment-cost/manifests/deployments.yaml
-kubectl apply -f infrastructure/kubernetes/eks-deployment-cost/manifests/statefulsets.yaml
+kubectl apply -k infrastructure/kubernetes/eks-deployment-cost
 ```
 
 Inspect workloads:

@@ -3,8 +3,15 @@ VERSION_FILE ?= VERSION
 INSTALL_PREFIX ?=
 KIND_CLUSTER_NAME ?= hape
 KIND_CONFIG_PATH ?= infrastructure/kubernetes/kind/cluster-config.yaml
+KUSTOMIZE_TARGET_PATH := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help clean bump-version build install kind-up helmfile-sync kind-down
+.PHONY: help clean bump-version build install kind-up helmfile-sync kind-down kustomize-apply kustomize-delete
+
+ifneq ($(filter kustomize-apply kustomize-delete,$(firstword $(MAKECMDGOALS))),)
+  ifneq ($(KUSTOMIZE_TARGET_PATH),)
+$(eval $(KUSTOMIZE_TARGET_PATH):;@:)
+  endif
+endif
 
 help: ## Show available commands.
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | \
@@ -61,3 +68,33 @@ kind-down: ## Delete local kind cluster named $(KIND_CLUSTER_NAME).
 	else \
 		echo "kind cluster $(KIND_CLUSTER_NAME) is not running"; \
 	fi
+
+kustomize-apply: ## Apply kustomization path passed as second make argument.
+	@if [ -z "$(KUSTOMIZE_TARGET_PATH)" ]; then \
+		echo "Usage: make kustomize-apply <kustomization-path>"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(KUSTOMIZE_TARGET_PATH)" ]; then \
+		echo "Error: directory not found: $(KUSTOMIZE_TARGET_PATH)"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(KUSTOMIZE_TARGET_PATH)/kustomization.yaml" ]; then \
+		echo "Error: kustomization.yaml not found in: $(KUSTOMIZE_TARGET_PATH)"; \
+		exit 1; \
+	fi
+	kubectl kustomize --load-restrictor=LoadRestrictionsNone "$(KUSTOMIZE_TARGET_PATH)" | kubectl apply -f -
+
+kustomize-delete: ## Delete kustomization path passed as second make argument.
+	@if [ -z "$(KUSTOMIZE_TARGET_PATH)" ]; then \
+		echo "Usage: make kustomize-delete <kustomization-path>"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(KUSTOMIZE_TARGET_PATH)" ]; then \
+		echo "Error: directory not found: $(KUSTOMIZE_TARGET_PATH)"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(KUSTOMIZE_TARGET_PATH)/kustomization.yaml" ]; then \
+		echo "Error: kustomization.yaml not found in: $(KUSTOMIZE_TARGET_PATH)"; \
+		exit 1; \
+	fi
+	kubectl kustomize --load-restrictor=LoadRestrictionsNone "$(KUSTOMIZE_TARGET_PATH)" | kubectl delete -f -

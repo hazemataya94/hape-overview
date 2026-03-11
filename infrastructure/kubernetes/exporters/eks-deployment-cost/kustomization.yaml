@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+resources:
+  - rbac.yaml
+  - deployment.yaml
+  - service.yaml
+  - servicemonitor.yaml
+configMapGenerator:
+  - name: hape-edc-exporter-runtime-input
+    options:
+      disableNameSuffixHash: true
+    files:
+      - exporter_main_py=../../../../exporters/eks_deployment_cost_exporter.py
+      - requirements_txt=../../../../requirements.txt
+  - name: hape-edc-exporter-runtime-modules
+    options:
+      disableNameSuffixHash: true
+    files:
+      - core_init_py=../../../../core/__init__.py
+      - core_config_py=../../../../core/config.py
+      - core_logging_py=../../../../core/logging.py
+      - core_errors_init_py=../../../../core/errors/__init__.py
+      - core_errors_exceptions_py=../../../../core/errors/exceptions.py
+      - core_errors_handler_py=../../../../core/errors/handler.py
+      - core_errors_messages_init_py=../../../../core/errors/messages/__init__.py
+      - core_errors_messages_config_error_messages_py=../../../../core/errors/messages/config_error_messages.py
+      - core_errors_messages_confluence_error_messages_py=../../../../core/errors/messages/confluence_error_messages.py
+      - core_errors_messages_gitlab_error_messages_py=../../../../core/errors/messages/gitlab_error_messages.py
+      - core_errors_messages_jira_error_messages_py=../../../../core/errors/messages/jira_error_messages.py
+      - core_errors_messages_csv_error_messages_py=../../../../core/errors/messages/csv_error_messages.py
+      - core_errors_messages_eks_deployment_cost_error_messages_py=../../../../core/errors/messages/eks_deployment_cost_error_messages.py
+      - core_errors_messages_markdown_error_messages_py=../../../../core/errors/messages/markdown_error_messages.py
+      - services_init_py=../../../../services/__init__.py
+      - services_eks_deployment_cost_service_py=../../../../services/eks_deployment_cost_service.py
+      - clients_init_py=../../../../clients/__init__.py
+      - clients_aws_client_py=../../../../clients/aws_client.py
+      - clients_kubernetes_client_py=../../../../clients/kubernetes_client.py
+      - utils_init_py=../../../../utils/__init__.py
+      - utils_csv_manager_py=../../../../utils/csv_manager.py
+      - utils_file_manager_py=../../../../utils/file_manager.py
+      - utils_validation_utils_py=../../../../utils/validation_utils.py

@@ -32,6 +32,18 @@ Delete cluster:
 make kind-down
 ```
 
+Before applying `infrastructure/kubernetes/aws-credentials`, create local file `infrastructure/kubernetes/aws-credentials/.aws-credentials` from your AWS credentials source.
+```bash
+cp ~/.aws/credentials infrastructure/kubernetes/aws-credentials/.aws-credentials
+```
+
+Deploy EKS deployment cost exporter:
+
+```bash
+make kustomize-apply infrastructure/kubernetes/aws-credentials
+make kustomize-apply infrastructure/kubernetes/exporters/eks-deployment-cost
+```
+
 ## Expected result
 - `make kind-up` creates cluster `hape` when not already running.
 - `make kind-down` deletes cluster `hape` when running.
@@ -39,4 +51,6 @@ make kind-down
 ## Related files
 - `infrastructure/kubernetes/kind/cluster-config.yaml`
 - `infrastructure/kubernetes/kind/README.md`
+- `infrastructure/kubernetes/exporters/README.md`
+- `infrastructure/kubernetes/exporters/eks-deployment-cost/kustomization.yaml`
 - `Makefile`

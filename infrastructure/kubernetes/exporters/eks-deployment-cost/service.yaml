@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hape-edc-exporter
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: hape-edc-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: hape-edc-exporter
+  ports:
+    - name: metrics
+      port: 9117
+      protocol: TCP
+      targetPort: metrics

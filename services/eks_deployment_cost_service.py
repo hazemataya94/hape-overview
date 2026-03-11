@@ -53,8 +53,8 @@ class EksDeploymentCostService:
         items = [item for item in raw_items if item]
         return items or None
 
-    def _validate_inputs(self, kube_context: str, output_dir: str, top_n: int, resource_types: list[str]) -> None:
-        if not kube_context or not kube_context.strip():
+    def _validate_inputs(self, kube_context: str, output_dir: str, top_n: int, resource_types: list[str], use_incluster_config: bool) -> None:
+        if not use_incluster_config and (not kube_context or not kube_context.strip()):
             raise HapeValidationError(code="EDC_KUBE_CONTEXT_REQUIRED", message=get_eks_deployment_cost_error_message("EDC_KUBE_CONTEXT_REQUIRED"))
         if not output_dir or not output_dir.strip():
             raise HapeValidationError(code="EDC_OUTPUT_DIR_REQUIRED", message=get_eks_deployment_cost_error_message("EDC_OUTPUT_DIR_REQUIRED"))
@@ -174,7 +174,9 @@ class EksDeploymentCostService:
             writer.writeheader()
 
     @staticmethod
-    def _resolve_kube_context(kube_context: str | None, kube_config_file: str | None) -> str:
+    def _resolve_kube_context(kube_context: str | None, kube_config_file: str | None, use_incluster_config: bool) -> str:
+        if use_incluster_config:
+            return ""
         if kube_context and kube_context.strip():
             return kube_context.strip()
         try:
@@ -210,25 +212,19 @@ class EksDeploymentCostService:
             return output_dir.strip()
         return tempfile.mkdtemp(prefix="hape-eks-deployment-cost-")
 
-    def generate_report(
-        self,
-        kube_context: str | None = None,
-        aws_profile: str | None = None,
-        output_dir: str | None = None,
-        top_n: int = 20,
-        resource_types_csv: str | None = None,
-        namespaces_csv: str | None = None,
-        ignored_namespaces_csv: str | None = None,
-        aws_region: str | None = None,
-        kube_config_file: str | None = None,
-    ) -> dict:
+    def generate_report(self, kube_context: str | None = None, aws_profile: str | None = None, output_dir: str | None = None, top_n: int = 20, resource_types_csv: str | None = None, namespaces_csv: str | None = None, ignored_namespaces_csv: str | None = None, aws_region: str | None = None, kube_config_file: str | None = None, use_incluster_config: bool = False) -> dict:
         self.logger.debug(
             "generate_report("
             f"kube_context: {kube_context}, aws_profile: {aws_profile}, output_dir: {output_dir}, "
             f"top_n: {top_n}, resource_types_csv: {resource_types_csv}, namespaces_csv: {namespaces_csv}, "
-            f"ignored_namespaces_csv: {ignored_namespaces_csv}, aws_region: {aws_region}, kube_config_file: {kube_config_file})"
+            f"ignored_namespaces_csv: {ignored_namespaces_csv}, aws_region: {aws_region}, kube_config_file: {kube_config_file}, "
+            f"use_incluster_config: {use_incluster_config})"
         )
-        resolved_kube_context = self._resolve_kube_context(kube_context=kube_context, kube_config_file=kube_config_file)
+        resolved_kube_context = self._resolve_kube_context(
+            kube_context=kube_context,
+            kube_config_file=kube_config_file,
+            use_incluster_config=use_incluster_config,
+        )
         resolved_aws_profile = self._resolve_aws_profile(aws_profile=aws_profile)
         resolved_output_dir = self._resolve_output_dir(output_dir=output_dir)
         resource_types = self._normalize_csv_argument(resource_types_csv) or list(self.ALLOWED_RESOURCE_TYPES)
@@ -239,8 +235,13 @@ class EksDeploymentCostService:
             output_dir=resolved_output_dir,
             top_n=top_n,
             resource_types=resource_types,
+            use_incluster_config=use_incluster_config,
         )
-        kubernetes_client = KubernetesClient(context=resolved_kube_context, config_file=kube_config_file)
+        kubernetes_client = KubernetesClient(
+            context=resolved_kube_context,
+            config_file=kube_config_file,
+            use_incluster_config=use_incluster_config,
+        )
         aws_client = AwsClient(profile_name=resolved_aws_profile)
         effective_region = aws_region or aws_client.get_region_name()
         ignored_namespaces_set = set(ignored_namespaces)

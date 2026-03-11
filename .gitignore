@@ -50,3 +50,6 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Local AWS credentials for k8s secret generation
+infrastructure/kubernetes/aws-credentials/.aws-credentials

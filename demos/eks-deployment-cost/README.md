@@ -7,6 +7,8 @@ It helps you understand output schema and cost fields before running the command
 ## Files
 - `eks-deployment-cost-summary.json`: metadata, totals, top costing workloads, and pricing context.
 - `eks-deployment-cost-details.csv`: one row per workload with CPU and memory request based cost calculations.
+- `prometheus-exporter-metrics.png`: Prometheus UI view of exporter metrics.
+- `grafana-dashboard.png`: Grafana dashboard view for EKS deployment cost metrics.
 
 ## Prerequisites
 - Python dependencies installed for this project.
@@ -22,6 +24,15 @@ make kind-up
 HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -q -s
 ```
 The output files in this directory were copied from the generated test outputs.
+
+## Screenshots
+Prometheus exporter metrics view:
+
+![Prometheus exporter metrics](./prometheus-exporter-metrics.png)
+
+Grafana dashboard view:
+
+![Grafana dashboard](./grafana-dashboard.png)
 
 ## Stop KIND Cluster
 ```bash

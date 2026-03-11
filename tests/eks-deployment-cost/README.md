@@ -19,7 +19,7 @@ It does not create or require an EKS cluster.
 
 ## Files
 - `infrastructure/kubernetes/kind/cluster-config.yaml` cluster definition.
-- `infrastructure/kubernetes/eks-deployment-cost/manifests/` test namespaces and workloads.
+- `infrastructure/kubernetes/eks-deployment-cost/` kustomize fixtures for test namespaces and workloads.
 - `conftest.py` cluster and manifest fixtures.
 - `test_eks_deployment_cost_functional.py` end-to-end local functional test.
 

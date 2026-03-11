@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hape-edc-exporter
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: hape-edc-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hape-edc-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hape-edc-exporter
+    spec:
+      serviceAccountName: hape-edc-exporter
+      volumes:
+        - name: source-files
+          projected:
+            sources:
+              - configMap:
+                  name: hape-edc-exporter-runtime-input
+                  items:
+                    - key: exporter_main_py
+                      path: exporters/eks_deployment_cost_exporter.py
+                    - key: requirements_txt
+                      path: requirements.txt
+              - configMap:
+                  name: hape-edc-exporter-runtime-modules
+                  items:
+                    - key: core_init_py
+                      path: core/__init__.py
+                    - key: core_config_py
+                      path: core/config.py
+                    - key: core_logging_py
+                      path: core/logging.py
+                    - key: core_errors_init_py
+                      path: core/errors/__init__.py
+                    - key: core_errors_exceptions_py
+                      path: core/errors/exceptions.py
+                    - key: core_errors_handler_py
+                      path: core/errors/handler.py
+                    - key: core_errors_messages_init_py
+                      path: core/errors/messages/__init__.py
+                    - key: core_errors_messages_config_error_messages_py
+                      path: core/errors/messages/config_error_messages.py
+                    - key: core_errors_messages_confluence_error_messages_py
+                      path: core/errors/messages/confluence_error_messages.py
+                    - key: core_errors_messages_gitlab_error_messages_py
+                      path: core/errors/messages/gitlab_error_messages.py
+                    - key: core_errors_messages_jira_error_messages_py
+                      path: core/errors/messages/jira_error_messages.py
+                    - key: core_errors_messages_csv_error_messages_py
+                      path: core/errors/messages/csv_error_messages.py
+                    - key: core_errors_messages_eks_deployment_cost_error_messages_py
+                      path: core/errors/messages/eks_deployment_cost_error_messages.py
+                    - key: core_errors_messages_markdown_error_messages_py
+                      path: core/errors/messages/markdown_error_messages.py
+                    - key: services_init_py
+                      path: services/__init__.py
+                    - key: services_eks_deployment_cost_service_py
+                      path: services/eks_deployment_cost_service.py
+                    - key: clients_init_py
+                      path: clients/__init__.py
+                    - key: clients_aws_client_py
+                      path: clients/aws_client.py
+                    - key: clients_kubernetes_client_py
+                      path: clients/kubernetes_client.py
+                    - key: utils_init_py
+                      path: utils/__init__.py
+                    - key: utils_csv_manager_py
+                      path: utils/csv_manager.py
+                    - key: utils_file_manager_py
+                      path: utils/file_manager.py
+                    - key: utils_validation_utils_py
+                      path: utils/validation_utils.py
+        - name: python-site-packages
+          emptyDir: {}
+        - name: aws-credentials
+          secret:
+            secretName: hape-aws-credentials
+            optional: false
+      initContainers:
+        - name: install-requirements
+          image: python:3.12-slim
+          command: ["/bin/sh", "-c"]
+          args:
+            - pip install --no-cache-dir -r /workspace/src/requirements.txt --target /workspace/site-packages
+          volumeMounts:
+            - name: source-files
+              mountPath: /workspace/src
+              readOnly: true
+            - name: python-site-packages
+              mountPath: /workspace/site-packages
+      containers:
+        - name: exporter
+          image: python:3.12-slim
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - python /workspace/src/exporters/eks_deployment_cost_exporter.py
+          env:
+            - name: PYTHONPATH
+              value: /workspace/site-packages:/workspace/src
+            - name: HAPE_EXPORTER_HOST
+              value: 0.0.0.0
+            - name: HAPE_EXPORTER_PORT
+              value: "9117"
+            - name: HAPE_EXPORTER_REFRESH_SECONDS
+              value: "300"
+            - name: HAPE_EDC_AWS_PROFILE
+              value: default
+            - name: HAPE_EDC_IGNORED_NAMESPACES
+              value: kube-system,kube-node-lease,kube-public,local-path-storage
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /workspace/aws/credentials
+            - name: AWS_PROFILE
+              value: default
+            - name: AWS_DEFAULT_REGION
+              value: eu-central-1
+          ports:
+            - containerPort: 9117
+              name: metrics
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: source-files
+              mountPath: /workspace/src
+              readOnly: true
+            - name: python-site-packages
+              mountPath: /workspace/site-packages
+            - name: aws-credentials
+              mountPath: /workspace/aws
+              readOnly: true

@@ -10,18 +10,26 @@ from utils.file_manager import FileManager
 
 
 class KubernetesClient:
-    def __init__(self, context, config_file=None):
-        if not context:
-            raise ValueError("Error: Kubernetes context not defined")
-
-        kubernetes.config.load_kube_config(context=context, config_file=config_file)
+    def __init__(self, context: str | None = None, config_file: str | None = None, use_incluster_config: bool = False) -> None:
+        resolved_context = context.strip() if context else ""
+        if use_incluster_config:
+            kubernetes.config.load_incluster_config()
+            resolved_context = "in-cluster"
+        elif resolved_context:
+            kubernetes.config.load_kube_config(context=resolved_context, config_file=config_file)
+        else:
+            try:
+                kubernetes.config.load_incluster_config()
+                resolved_context = "in-cluster"
+            except Exception as exc:
+                raise ValueError("Error: Kubernetes context is not defined and in-cluster config is unavailable.") from exc
 
         # Disable TLS verification for this client instance
         configuration = kubernetes.client.Configuration.get_default_copy()
         configuration.verify_ssl = False
         kubernetes.client.Configuration.set_default(configuration)
 
-        self.context = context
+        self.context = resolved_context
         self.logger = LocalLogging.get_logger("hape.kubernetes_client")
         self.file_manager = FileManager()
         self.core_v1 = kubernetes.client.CoreV1Api()
