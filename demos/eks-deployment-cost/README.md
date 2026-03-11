@@ -62,7 +62,7 @@ HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -q -
 ```
 The output files in this directory were copied from the generated test outputs.
 
-## Cleanup and Stop KIND Cluster
+## Cleanup
 ```bash
 make kind-down
 ```
