@@ -6,6 +6,7 @@ import pytest
 
 import services.eks_deployment_cost_service as eks_deployment_cost_service_module
 from services.eks_deployment_cost_service import EksDeploymentCostService
+from utils.test_artifacts_utils import print_artifacts_directory
 
 
 class _FakeAwsClient:
@@ -46,11 +47,6 @@ def test_generate_report_on_kind_cluster(apply_test_manifests: dict[str, str | N
     kube_context = str(apply_test_manifests["kube_context"])
     kubeconfig_path = apply_test_manifests["kubeconfig_path"]
     output_dir = tmp_path / "eks-cost-report"
-    print("\n")
-    print("-" * 80)
-    print("Artifacts directory")
-    print(output_dir)
-    print("-" * 80)
     outputs = service.generate_report(
         kube_context=kube_context,
         kube_config_file=str(kubeconfig_path) if kubeconfig_path else None,
@@ -113,7 +109,8 @@ def test_generate_report_on_kind_cluster(apply_test_manifests: dict[str, str | N
     assert daily == pytest.approx(hourly * 24, rel=0, abs=1e-6)
     assert monthly == pytest.approx(hourly * 24 * 30, rel=0, abs=1e-6)
     assert yearly == pytest.approx(hourly * 24 * 365, rel=0, abs=1e-6)
+    print_artifacts_directory(artifacts_directory=output_dir)
 
 
 if __name__ == "__main__":
-    raise SystemExit(pytest.main(["-q", __file__]))
+    raise SystemExit(pytest.main([__file__]))

@@ -13,3 +13,10 @@ Apply these rules when creating or updating documentation in this repository.
 ## Command examples in docs
 - When writing documentation command examples for Python, always use `python` (never virtualenv-prefixed interpreter paths or `python3`).
 - Keep commands copy-paste ready from repository root unless a different working directory is required.
+
+## Demo README requirements
+- Every feature demo under `demos/` must include a README with complete end-to-end reproduction instructions so a user can run the full workflow independently.
+- Demo README steps must include: prerequisites, environment setup, infrastructure startup commands (when needed), feature execution commands, artifact locations, verification checks, and cleanup steps.
+- Demo README instructions must be concrete and executable from repository root without relying on implicit context.
+- Demo README files must include screenshots (or equivalent visual output captures) that show the feature outputs after successful execution.
+- In demo READMEs, place the `Screenshots` section immediately after `Prerequisites`.

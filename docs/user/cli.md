@@ -22,6 +22,7 @@ Commands are grouped by integration. Each group has subcommands where needed.
 - `csv` - [csv.md](csv.md)
 - `eks-deployment-cost` - [eks-deployment-cost.md](eks-deployment-cost.md)
 - `markdown` - [markdown.md](markdown.md)
+- `kube-agent` - [kube-agent.md](kube-agent.md)
 
 Argument and validation errors print command help automatically.
 

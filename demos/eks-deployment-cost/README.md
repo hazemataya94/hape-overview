@@ -58,9 +58,14 @@ Then import `dashboards/eks-deployment-cost.json` in Grafana.
 
 8) Optional: regenerate service output demo files:
 ```bash
-HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -q -s
+HAPE_RUN_KIND_FUNCTIONAL_TESTS=1 python -m pytest tests/eks-deployment-cost -s
 ```
 The output files in this directory were copied from the generated test outputs.
+
+9) Verify artifacts:
+- Confirm `eks-deployment-cost-summary.json` exists and includes `metadata`, `summary`, `top_costing_workloads`, and `pricing_by_instance_type`.
+- Confirm `eks-deployment-cost-details.csv` exists and includes one row per workload.
+- Confirm summary totals match the expected details CSV aggregation for key cost columns.
 
 ## Cleanup
 ```bash

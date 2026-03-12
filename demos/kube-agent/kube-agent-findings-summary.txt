@@ -1,0 +1,1 @@
+Detected 3 likely cause(s) for pod 'kube-agent-api-78d57f77dc-f4h9r': oom-kill, probe-failure, deployment-revision-change.

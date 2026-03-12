@@ -10,6 +10,7 @@ from cli.commands.csv_commands import CsvCommands
 from cli.commands.eks_deployment_cost_commands import EksDeploymentCostCommands
 from cli.commands.gitlab_commands import GitLabCommands
 from cli.commands.jira_commands import JiraCommands
+from cli.commands.kube_agent_commands import KubeAgentCommands
 from cli.commands.markdown_commands import MarkdownCommands
 
 class _CommandHelpFormatter(argparse.HelpFormatter):
@@ -69,6 +70,7 @@ class CLI:
         ConfluenceCommands.register(subparsers)
         CsvCommands.register(subparsers)
         EksDeploymentCostCommands.register(subparsers)
+        KubeAgentCommands.register(subparsers)
         MarkdownCommands.register(subparsers)
 
         return parser

@@ -15,6 +15,7 @@ This section centralizes infrastructure documentation for local Kubernetes setup
 - [Local Kubernetes](local-kubernetes.md) - kind cluster setup and lifecycle.
 - [Helmfile Monitoring Stack](helmfile-monitoring.md) - local monitoring bootstrap via Helmfile.
 - [EKS Deployment Cost Fixtures](eks-deployment-cost-fixtures.md) - Kubernetes fixtures used by functional tests.
+- [Kube Agent Fixtures](kube-agent-fixtures.md) - Kubernetes fixtures used by kube-agent functional tests.
 - [Terraform Status](terraform.md) - current Terraform scope and status.
 
 ## Validation steps

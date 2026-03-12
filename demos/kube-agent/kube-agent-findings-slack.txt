@@ -1,0 +1,5 @@
+*pod incident: kube-agent-test/kube-agent-api-78d57f77dc-f4h9r*
+*Summary:* Detected 3 likely cause(s) for pod 'kube-agent-api-78d57f77dc-f4h9r': oom-kill, probe-failure, deployment-revision-change.
+*Likely root cause:* oom-kill
+*Suggested fix:* Increase memory request/limit or reduce memory pressure in workload.
+*AI used:* False

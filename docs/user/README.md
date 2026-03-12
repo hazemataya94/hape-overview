@@ -17,3 +17,4 @@ Use these docs to run commands, configure HAPE, and execute supported integratio
 - [eks-deployment-cost.md](eks-deployment-cost.md) - EKS deployment and statefulset cost report usage.
 - [kubernetes.md](kubernetes.md) - Kubernetes ESO export workflow.
 - [markdown.md](markdown.md) - Markdown table import/export usage.
+- [kube-agent.md](kube-agent.md) - Kubernetes incident investigation workflow.

@@ -606,6 +606,17 @@ class KubernetesClient:
             results.append({"namespace": pod.metadata.namespace, "pod_name": pod.metadata.name, "pod_uid": pod.metadata.uid})
         return results
 
+    def list_pods_for_node(self, node_name: str) -> list[dict[str, str]]:
+        self.logger.debug(f"list_pods_for_node(node_name: {node_name})")
+        pods = self.core_v1.list_pod_for_all_namespaces(field_selector=f"spec.nodeName={node_name}")
+        items: list[dict[str, str]] = []
+        for pod in pods.items:
+            namespace = pod.metadata.namespace if pod.metadata else ""
+            pod_name = pod.metadata.name if pod.metadata else ""
+            if namespace and pod_name:
+                items.append({"namespace": namespace, "pod_name": pod_name})
+        return items
+
     def get_pod_if_exists(self, namespace: str, pod_name: str):
         self.logger.debug(f"get_pod_if_exists(namespace: {namespace}, pod_name: {pod_name})")
         try:
@@ -705,6 +716,71 @@ class KubernetesClient:
     def get_pod(self, namespace: str, pod_name: str):
         self.logger.debug(f"get_pod(namespace: {namespace}, pod_name: {pod_name})")
         return self.core_v1.read_namespaced_pod(name=pod_name, namespace=namespace)
+
+    def get_node(self, node_name: str):
+        self.logger.debug(f"get_node(node_name: {node_name})")
+        return self.core_v1.read_node(name=node_name)
+
+    def list_pod_events(self, namespace: str, pod_name: str) -> list:
+        self.logger.debug(f"list_pod_events(namespace: {namespace}, pod_name: {pod_name})")
+        field_selector = f"involvedObject.kind=Pod,involvedObject.name={pod_name}"
+        events = self.core_v1.list_namespaced_event(namespace=namespace, field_selector=field_selector)
+        return events.items or []
+
+    def get_pod_logs(self, namespace: str, pod_name: str, container: str | None = None, tail_lines: int = 200) -> str:
+        self.logger.debug(
+            f"get_pod_logs(namespace: {namespace}, pod_name: {pod_name}, container: {container}, tail_lines: {tail_lines})"
+        )
+        return self.core_v1.read_namespaced_pod_log(
+            name=pod_name,
+            namespace=namespace,
+            container=container,
+            tail_lines=tail_lines,
+        )
+
+    def get_replicaset_history(self, namespace: str, deployment_name: str) -> list:
+        self.logger.debug(f"get_replicaset_history(namespace: {namespace}, deployment_name: {deployment_name})")
+        deployment = self.get_deployment(namespace=namespace, name=deployment_name)
+        selector = self._build_label_selector(match_labels=deployment.spec.selector.match_labels or {})
+        replica_sets = self.apps_v1.list_namespaced_replica_set(namespace=namespace, label_selector=selector)
+        history: list[dict[str, str | int | None]] = []
+        for replica_set in replica_sets.items:
+            annotations = replica_set.metadata.annotations or {}
+            history.append(
+                {
+                    "name": replica_set.metadata.name,
+                    "revision": annotations.get("deployment.kubernetes.io/revision"),
+                    "replicas": replica_set.spec.replicas,
+                }
+            )
+        history.sort(key=lambda item: str(item.get("revision") or "0"), reverse=True)
+        return history
+
+    def get_pod_owner(self, namespace: str, pod_name: str) -> dict[str, str] | None:
+        self.logger.debug(f"get_pod_owner(namespace: {namespace}, pod_name: {pod_name})")
+        pod = self.get_pod(namespace=namespace, pod_name=pod_name)
+        owners = pod.metadata.owner_references or []
+        if not owners:
+            return None
+        owner = owners[0]
+        return {"kind": owner.kind, "name": owner.name}
+
+    def list_related_resources(self, namespace: str, workload_name: str) -> list[dict[str, str]]:
+        self.logger.debug(f"list_related_resources(namespace: {namespace}, workload_name: {workload_name})")
+        resources: list[dict[str, str]] = []
+        pods = self.core_v1.list_namespaced_pod(namespace=namespace)
+        for pod in pods.items:
+            pod_name = pod.metadata.name if pod.metadata else ""
+            if workload_name not in pod_name:
+                continue
+            resources.append({"kind": "Pod", "name": pod_name})
+        deployments = self.apps_v1.list_namespaced_deployment(namespace=namespace)
+        for deployment in deployments.items:
+            deployment_name = deployment.metadata.name if deployment.metadata else ""
+            if workload_name not in deployment_name:
+                continue
+            resources.append({"kind": "Deployment", "name": deployment_name})
+        return resources
 
     def wait_for_recreated_pod_ready(self, namespace: str, pod_name: str, old_pod_uid: str, timeout_seconds: int = 1800, poll_seconds: int = 10) -> None:
         self.logger.debug(

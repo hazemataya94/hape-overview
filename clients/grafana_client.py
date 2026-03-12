@@ -71,6 +71,40 @@ class GrafanaClient:
             return data
         return {}
 
+    def find_dashboard_links(self, namespace: str | None, workload_name: str | None, node_name: str | None) -> dict[str, str]:
+        self.logger.debug(
+            f"find_dashboard_links(namespace: {namespace}, workload_name: {workload_name}, node_name: {node_name})"
+        )
+        dashboards = self.list_dashboards()
+        match_tokens = [token.lower() for token in [namespace, workload_name, node_name] if token]
+        links: dict[str, str] = {}
+        for dashboard in dashboards:
+            uid = dashboard.get("uid")
+            title = str(dashboard.get("title", ""))
+            url = dashboard.get("url")
+            if not uid or not url:
+                continue
+            normalized_title = title.lower()
+            if match_tokens and not any(token in normalized_title for token in match_tokens):
+                continue
+            links[title or str(uid)] = f"{self.base_url}{url}"
+        return links
+
+    def build_dashboard_url_for_resource(self, resource_kind: str, resource_name: str, namespace: str | None = None) -> str:
+        self.logger.debug(
+            f"build_dashboard_url_for_resource(resource_kind: {resource_kind}, resource_name: {resource_name}, namespace: {namespace})"
+        )
+        title_tokens = [resource_kind, resource_name]
+        if namespace:
+            title_tokens.append(namespace)
+        normalized_tokens = [token.lower() for token in title_tokens if token]
+        for dashboard in self.list_dashboards():
+            dashboard_title = str(dashboard.get("title", "")).lower()
+            dashboard_url = dashboard.get("url")
+            if dashboard_url and all(token in dashboard_title for token in normalized_tokens):
+                return f"{self.base_url}{dashboard_url}"
+        return f"{self.base_url}/dashboards"
+
 if __name__ == "__main__":
     
     grafana_client = GrafanaClient(

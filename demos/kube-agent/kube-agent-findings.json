@@ -1,0 +1,26 @@
+{
+  "ai_used": false,
+  "dashboard_links": {
+    "Kubernetes Namespace Pods": "http://localhost:3000/d/k8s-namespace-pods?var-namespace=kube-agent-test",
+    "Kubernetes Pod Resources": "http://localhost:3000/d/k8s-pod?var-namespace=kube-agent-test&var-pod=kube-agent-api-78d57f77dc-f4h9r",
+    "Kubernetes Pods Overview": "http://localhost:3000/d/k8s-views-pods?var-namespace=kube-agent-test&var-pod=kube-agent-api-78d57f77dc-f4h9r"
+  },
+  "debugging_steps": [
+    "oom-kill: Pod restart appears linked to OOMKilled events.",
+    "probe-failure: Probe failure pattern found in pod events.",
+    "deployment-revision-change: Recent deployment revision change detected."
+  ],
+  "evidence_summary": [
+    "kubernetes.pod.status: pod/kube-agent-test/kube-agent-api-78d57f77dc-f4h9r",
+    "kubernetes.pod.events: pod/kube-agent-test/kube-agent-api-78d57f77dc-f4h9r",
+    "kubernetes.pod.logs: pod/kube-agent-test/kube-agent-api-78d57f77dc-f4h9r",
+    "kubernetes.pod.owner: pod/kube-agent-test/kube-agent-api-78d57f77dc-f4h9r"
+  ],
+  "incident_id": "af2f5a4d64d8f62d",
+  "likely_root_cause": "oom-kill",
+  "suggested_fixes": [
+    "Increase memory request/limit or reduce memory pressure in workload."
+  ],
+  "summary": "Detected 3 likely cause(s) for pod 'kube-agent-api-78d57f77dc-f4h9r': oom-kill, probe-failure, deployment-revision-change.",
+  "title": "pod incident: kube-agent-test/kube-agent-api-78d57f77dc-f4h9r"
+}

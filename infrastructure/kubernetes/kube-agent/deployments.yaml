@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-agent-api
+  namespace: kube-agent-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-agent-api
+  template:
+    metadata:
+      labels:
+        app: kube-agent-api
+    spec:
+      containers:
+        - name: api
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5

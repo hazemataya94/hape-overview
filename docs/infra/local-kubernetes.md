@@ -51,6 +51,7 @@ make kustomize-apply infrastructure/kubernetes/exporters/eks-deployment-cost
 ## Related files
 - `infrastructure/kubernetes/kind/cluster-config.yaml`
 - `infrastructure/kubernetes/kind/README.md`
+- `infrastructure/kubernetes/kube-agent/kustomization.yaml`
 - `infrastructure/kubernetes/exporters/README.md`
 - `infrastructure/kubernetes/exporters/eks-deployment-cost/kustomization.yaml`
 - `Makefile`
