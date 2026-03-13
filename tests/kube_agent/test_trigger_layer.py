@@ -34,5 +34,26 @@ def test_resolve_valid_alert_trigger_label_mapping() -> None:
     assert trigger.labels["severity"] == "warning"
 
 
+def test_resolve_valid_cost_trigger() -> None:
+    trigger_resolver = TriggerResolver()
+    trigger = trigger_resolver.resolve({
+        "type": "cost",
+        "cluster": "demo",
+        "namespace": "payments",
+        "deployment": "api",
+        "metadata": {"historical_offset": "1h"},
+    })
+    assert trigger.type == "cost"
+    assert trigger.name == "api"
+    assert trigger.namespace == "payments"
+
+
+def test_resolve_invalid_cost_trigger_missing_namespace() -> None:
+    trigger_resolver = TriggerResolver()
+    with pytest.raises(HapeValidationError) as raised_error:
+        trigger_resolver.resolve({"type": "cost", "cluster": "demo", "deployment": "api"})
+    assert raised_error.value.code == "KUBE_AGENT_TRIGGER_NAMESPACE_REQUIRED"
+
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main(["-q", __file__]))

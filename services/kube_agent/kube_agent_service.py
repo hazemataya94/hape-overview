@@ -44,9 +44,20 @@ class KubeAgentService:
         trigger = self.trigger_resolver.resolve(raw_trigger=raw_trigger)
         previous_incident = self.incident_memory_service.find_existing(trigger=trigger)
         kubernetes_client = KubernetesClient(context=trigger.cluster)
+        ensure_port_forward = getattr(kubernetes_client, "ensure_prometheus_port_forward", None)
+        if callable(ensure_port_forward):
+            ensure_port_forward(prometheus_base_url=self.config.prometheus_base_url)
+        ensure_grafana_port_forward = getattr(kubernetes_client, "ensure_grafana_port_forward", None)
+        if callable(ensure_grafana_port_forward):
+            ensure_grafana_port_forward(grafana_base_url=self.config.grafana_base_url)
         prometheus_client = PrometheusClient(base_url=self.config.prometheus_base_url)
         alertmanager_client = AlertmanagerClient(base_url=self.config.alertmanager_base_url)
-        grafana_client = GrafanaClient(base_url=self.config.grafana_base_url)
+        grafana_client = GrafanaClient(
+            base_url=self.config.grafana_base_url,
+            token=self.config.grafana_token,
+            username=self.config.grafana_username,
+            password=self.config.grafana_password,
+        )
         evidence = self.evidence_collector.collect(
             trigger=trigger,
             kubernetes_client=kubernetes_client,

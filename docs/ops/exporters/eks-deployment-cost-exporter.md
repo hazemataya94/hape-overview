@@ -69,3 +69,10 @@ Use this command to inspect the first metric lines:
 ```bash
 curl -s http://localhost:9117/metrics
 ```
+
+## Kube-agent integration
+`kube-agent` cost analysis consumes exporter metrics through Prometheus queries.
+Run from repository root:
+```bash
+hape kube-agent cost-analyze --kube-context demo --namespace payments --deployment api --historical-offset 1h --output markdown --use-ai false
+```

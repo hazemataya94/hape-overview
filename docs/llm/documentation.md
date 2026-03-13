@@ -20,3 +20,5 @@ Apply these rules when creating or updating documentation in this repository.
 - Demo README instructions must be concrete and executable from repository root without relying on implicit context.
 - Demo README files must include screenshots (or equivalent visual output captures) that show the feature outputs after successful execution.
 - In demo READMEs, place the `Screenshots` section immediately after `Prerequisites`.
+- Once a demo folder is created, do not modify it for new feature demonstrations.
+- For any new or changed feature demonstration, create a new demo folder by default.

@@ -7,6 +7,7 @@ This test suite validates `hape-kube-agent` trigger parsing, evidence normalizat
 - Unit tests for trigger, evidence collectors, check packs, case builders, and memory logic.
 - Integration-style tests for `KubeAgentService` orchestration using mocked clients.
 - CLI tests for argument parsing and service payload shaping.
+- Cost analysis tests for exporter-backed Prometheus evidence and threshold checks.
 
 ## Prerequisites
 - Use local Python environment with project dependencies installed.

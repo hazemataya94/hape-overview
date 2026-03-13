@@ -9,6 +9,7 @@ class TriggerParser:
         "deployment": "deployment",
         "node": "node",
         "alert": "alertname",
+        "cost": "deployment",
     }
 
     def _normalize_map(self, value: Any) -> dict[str, str]:

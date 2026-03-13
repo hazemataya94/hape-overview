@@ -1,4 +1,5 @@
 import argparse
+from datetime import UTC, datetime
 
 import cli.commands.kube_agent_commands as kube_agent_commands_module
 from cli.commands.kube_agent_commands import KubeAgentCommands
@@ -19,12 +20,10 @@ class _FakeFindings:
 
 class _FakeIncident:
     def __init__(self) -> None:
-        import datetime
-
         self.incident_id = "inc-1"
         self.fingerprint = "fp"
-        self.first_seen = datetime.datetime.utcnow()
-        self.last_seen = datetime.datetime.utcnow()
+        self.first_seen = datetime.now(UTC)
+        self.last_seen = datetime.now(UTC)
         self.occurrence_count = 2
         self.latest_likely_cause = "oom-kill"
 
@@ -186,6 +185,60 @@ def test_cli_deployment_and_node_commands(monkeypatch) -> None:
     )
     node_args.func(node_args)
     assert _FakeKubeAgentService.last_raw_trigger["type"] == "node"
+
+
+def test_cli_cost_analyze_command(monkeypatch) -> None:
+    monkeypatch.setattr(kube_agent_commands_module, "KubeAgentService", _FakeKubeAgentService)
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command")
+    KubeAgentCommands.register(subparsers)
+    args = parser.parse_args(
+        [
+            "kube-agent",
+            "cost-analyze",
+            "--kube-context",
+            "demo",
+            "--namespace",
+            "payments",
+            "--deployment",
+            "api",
+            "--historical-offset",
+            "2h",
+            "--use-ai",
+            "true",
+        ]
+    )
+    args.func(args)
+    assert _FakeKubeAgentService.last_raw_trigger["type"] == "cost"
+    assert _FakeKubeAgentService.last_raw_trigger["name"] == "api"
+    assert _FakeKubeAgentService.last_raw_trigger["metadata"]["historical_offset"] == "2h"
+    assert _FakeKubeAgentService.last_use_ai is True
+
+
+def test_cli_cost_analyze_all_workloads_command(monkeypatch) -> None:
+    monkeypatch.setattr(kube_agent_commands_module, "KubeAgentService", _FakeKubeAgentService)
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command")
+    KubeAgentCommands.register(subparsers)
+    args = parser.parse_args(
+        [
+            "kube-agent",
+            "cost-analyze",
+            "--kube-context",
+            "demo",
+            "--namespace",
+            "payments",
+            "--all-workloads",
+            "--historical-offset",
+            "1h",
+            "--use-ai",
+            "false",
+        ]
+    )
+    args.func(args)
+    assert _FakeKubeAgentService.last_raw_trigger["type"] == "cost"
+    assert _FakeKubeAgentService.last_raw_trigger["name"] == "__all__"
+    assert _FakeKubeAgentService.last_raw_trigger["metadata"]["all_workloads"] is True
 
 
 def test_cli_incidents_list_and_show(monkeypatch, capsys) -> None:

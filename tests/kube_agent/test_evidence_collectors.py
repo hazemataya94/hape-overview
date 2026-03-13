@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from services.kube_agent.evidence.collectors.pod_events_collector import PodEventsCollector
 from services.kube_agent.evidence.collectors.pod_logs_collector import PodLogsCollector
@@ -63,7 +63,7 @@ class _FakeKubernetesClient:
 
 class _FakePrometheusClient:
     def query(self, promql: str) -> dict:
-        return {"status": "success", "data": {"resultType": "vector", "result": [{"value": [datetime.utcnow().timestamp(), "0.1"]}]}}
+        return {"status": "success", "data": {"resultType": "vector", "result": [{"value": [datetime.now(UTC).timestamp(), "0.1"]}]}}
 
 
 def test_pod_status_evidence_normalization() -> None:

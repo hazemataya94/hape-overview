@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from services.kube_agent.checks.diagnostic_check_engine import DiagnosticCheckEngine
 from services.kube_agent.evidence.evidence_models import EvidenceBundle, EvidenceItem
@@ -15,7 +15,7 @@ def test_oom_kill_check_is_matched_when_event_contains_oomkilled() -> None:
                 source="kubernetes",
                 resource_ref="pod/payments/api",
                 value=[{"reason": "Killing", "message": "Container was OOMKilled"}],
-                observed_at=datetime.utcnow(),
+                observed_at=datetime.now(UTC),
                 metadata={},
             )
         ],
@@ -37,7 +37,7 @@ def test_failed_scheduling_check_not_matched_without_failures() -> None:
                 source="kubernetes",
                 resource_ref="pod/payments/api",
                 value=[],
-                observed_at=datetime.utcnow(),
+                observed_at=datetime.now(UTC),
                 metadata={},
             )
         ],

@@ -6,7 +6,7 @@ class GrafanaLinkResolver:
         namespace = trigger.namespace
         workload_name: str | None = None
         node_name: str | None = None
-        if trigger.type in {"pod", "deployment"}:
+        if trigger.type in {"pod", "deployment", "cost"}:
             workload_name = trigger.name
         elif trigger.type == "node":
             node_name = trigger.name

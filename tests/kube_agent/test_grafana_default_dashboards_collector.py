@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from services.kube_agent.evidence.collectors.grafana_default_dashboards_collector import GrafanaDefaultDashboardsCollector
 from services.kube_agent.evidence.evidence_models import EvidenceItem
@@ -30,7 +30,7 @@ def test_collect_pod_dashboards_with_context_vars() -> None:
             source="kubernetes",
             resource_ref="pod/payments/api",
             value=[{"reason": "Killing", "message": "Container was OOMKilled"}],
-            observed_at=datetime.utcnow(),
+            observed_at=datetime.now(UTC),
             metadata={},
         )
     ]
@@ -50,7 +50,7 @@ def test_collect_node_dashboards_for_scheduling_signals() -> None:
             source="kubernetes",
             resource_ref="pod/payments/api",
             value=[{"reason": "FailedScheduling", "message": "Insufficient memory"}],
-            observed_at=datetime.utcnow(),
+            observed_at=datetime.now(UTC),
             metadata={},
         )
     ]

@@ -10,7 +10,7 @@ class DiagnosticCheckEngine:
 
     def run(self, trigger: Trigger, evidence: EvidenceBundle) -> list[CheckResult]:
         results: list[CheckResult] = []
-        for check in self.registry.get_checks():
+        for check in self.registry.get_checks(trigger_type=trigger.type):
             results.append(check.evaluate(trigger=trigger, evidence=evidence))
         return results
 

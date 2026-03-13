@@ -1,0 +1,30 @@
+{
+  "ai_used": false,
+  "dashboard_links": {
+    "Pod dashboard": "http://localhost:3000/d/pod"
+  },
+  "debugging_steps": [
+    "cost-total-hourly-threshold: Total hourly cost 40.00 USD is above threshold 20.00 USD.",
+    "cost-workload-hourly-threshold: Deployment hourly cost 12.00 USD is above threshold 5.00 USD.",
+    "cost-hourly-increase-ratio: Hourly cost increase ratio is 4.00 and is above threshold 1.50.",
+    "cost-top-workloads-increase: Detected increased workload costs in the last window: payments/api (+3.00 USD/h), payments/worker (+1.00 USD/h)."
+  ],
+  "evidence_summary": [
+    "prometheus.cost.exporter_up: exporter/eks-deployment-cost",
+    "prometheus.cost.total_hourly_usd: namespace/payments",
+    "prometheus.cost.total_hourly_usd.offset: namespace/payments",
+    "prometheus.cost.workload_hourly_usd: deployment/payments/api",
+    "prometheus.cost.top_workloads_hourly_usd: namespace/payments",
+    "prometheus.cost.top_workloads_hourly_usd.offset: namespace/payments"
+  ],
+  "incident_id": "41d206c30d8b2825",
+  "likely_root_cause": "cost-total-hourly-threshold",
+  "suggested_fixes": [
+    "Review namespace-wide resource requests and right-size high-request workloads.",
+    "Right-size deployment CPU and memory requests or scale down idle replicas.",
+    "Review recent deployment/config changes and compare request growth against baseline.",
+    "Review workloads with increased hourly cost and compare resource requests and replicas against one-hour baseline."
+  ],
+  "summary": "Cost analysis findings: Total hourly cost 40.00 USD is above threshold 20.00 USD. Deployment hourly cost 12.00 USD is above threshold 5.00 USD. Hourly cost increase ratio is 4.00 and is above threshold 1.50. Detected increased workload costs in the last window: payments/api (+3.00 USD/h), payments/worker (+1.00 USD/h).",
+  "title": "cost incident: payments/api"
+}

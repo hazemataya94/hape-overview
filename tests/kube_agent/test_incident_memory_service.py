@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from services.kube_agent.case.incident_case_models import IncidentCase
 from services.kube_agent.checks.diagnostic_check_models import CheckResult
@@ -26,7 +26,7 @@ def test_memory_service_saves_and_lists_incidents(tmp_path) -> None:
                     source="kubernetes",
                     resource_ref="pod/payments/api",
                     value=[{"reason": "Killing", "message": "OOMKilled"}],
-                    observed_at=datetime.utcnow(),
+                    observed_at=datetime.now(UTC),
                     metadata={},
                 )
             ],

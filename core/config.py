@@ -38,6 +38,23 @@ class Config:
         "HAPE_EDC_KUBE_CONTEXT",
         "HAPE_EDC_AWS_PROFILE",
         "HAPE_EDC_IGNORED_NAMESPACES",
+        "HAPE_KUBE_AGENT_PROMETHEUS_URL",
+        "HAPE_KUBE_AGENT_GRAFANA_URL",
+        "HAPE_KUBE_AGENT_GRAFANA_TOKEN",
+        "HAPE_KUBE_AGENT_GRAFANA_USERNAME",
+        "HAPE_KUBE_AGENT_GRAFANA_PASSWORD",
+        "HAPE_KUBE_AGENT_ALERTMANAGER_URL",
+        "HAPE_KUBE_AGENT_SQLITE_PATH",
+        "HAPE_KUBE_AGENT_AI_ENABLED",
+        "HAPE_KUBE_AGENT_AI_STALE_HOURS",
+        "HAPE_KUBE_AGENT_RESTART_THRESHOLD",
+        "HAPE_KUBE_AGENT_POD_LOG_TAIL_LINES",
+        "HAPE_KUBE_AGENT_LOOKBACK_MINUTES",
+        "HAPE_KUBE_AGENT_SLACK_CHANNEL",
+        "HAPE_KUBE_AGENT_COST_TOTAL_HOURLY_USD_THRESHOLD",
+        "HAPE_KUBE_AGENT_COST_WORKLOAD_HOURLY_USD_THRESHOLD",
+        "HAPE_KUBE_AGENT_COST_INCREASE_RATIO_THRESHOLD",
+        "HAPE_KUBE_AGENT_COST_TOP_WORKLOADS_LIMIT",
     ]
 
     int_config_keys = [
@@ -47,6 +64,11 @@ class Config:
         "CONFLUENCE_TEST_PARENT_PAGE_ID",
         "HAPE_EXPORTER_PORT",
         "HAPE_EXPORTER_REFRESH_SECONDS",
+        "HAPE_KUBE_AGENT_AI_STALE_HOURS",
+        "HAPE_KUBE_AGENT_RESTART_THRESHOLD",
+        "HAPE_KUBE_AGENT_POD_LOG_TAIL_LINES",
+        "HAPE_KUBE_AGENT_LOOKBACK_MINUTES",
+        "HAPE_KUBE_AGENT_COST_TOP_WORKLOADS_LIMIT",
     ]
 
     @staticmethod
@@ -143,6 +165,18 @@ class Config:
             ) from exc
 
     @staticmethod
+    def _get_config_float_with_default(config_key: str, default_value: float) -> float:
+        config_value = Config._get_optional_config_value(config_key)
+        if config_value is None:
+            return default_value
+        try:
+            return float(config_value)
+        except ValueError as exc:
+            raise ValueError(
+                f"{config_key} must be a float. Value is '{config_value}'."
+            ) from exc
+
+    @staticmethod
     def get_supported_config_keys() -> list[str]:
         return Config.supported_config_keys
 
@@ -156,6 +190,10 @@ class Config:
             Config._config_path = config_path
             Config._config_loaded = False
             Config._config_data = None
+
+    @staticmethod
+    def ensure_env_loaded() -> None:
+        Config._load_dotenv()
 
     @staticmethod
     def get_config_path() -> str:
@@ -287,4 +325,89 @@ class Config:
         default_value = "kube-system,kube-node-lease,kube-public,local-path-storage"
         ignored_namespaces_csv = Config._get_config_value_with_default("HAPE_EDC_IGNORED_NAMESPACES", default_value)
         return ValidationUtils.require_string("HAPE_EDC_IGNORED_NAMESPACES", ignored_namespaces_csv)
+
+    @staticmethod
+    def get_kube_agent_prometheus_url() -> str:
+        return Config._get_config_value_with_default("HAPE_KUBE_AGENT_PROMETHEUS_URL", "http://localhost:9090")
+
+    @staticmethod
+    def get_kube_agent_grafana_url() -> str:
+        return Config._get_config_value_with_default("HAPE_KUBE_AGENT_GRAFANA_URL", "http://localhost:3000")
+
+    @staticmethod
+    def get_kube_agent_grafana_token() -> str:
+        token = Config._get_optional_config_value("HAPE_KUBE_AGENT_GRAFANA_TOKEN")
+        return token or ""
+
+    @staticmethod
+    def get_kube_agent_grafana_username() -> str:
+        username = Config._get_optional_config_value("HAPE_KUBE_AGENT_GRAFANA_USERNAME")
+        return username or ""
+
+    @staticmethod
+    def get_kube_agent_grafana_password() -> str:
+        password = Config._get_optional_config_value("HAPE_KUBE_AGENT_GRAFANA_PASSWORD")
+        return password or ""
+
+    @staticmethod
+    def get_kube_agent_alertmanager_url() -> str:
+        return Config._get_config_value_with_default("HAPE_KUBE_AGENT_ALERTMANAGER_URL", "http://localhost:9093")
+
+    @staticmethod
+    def get_kube_agent_sqlite_path() -> str:
+        return Config._get_config_value_with_default("HAPE_KUBE_AGENT_SQLITE_PATH", "~/.hape/kube-agent.sqlite")
+
+    @staticmethod
+    def get_kube_agent_ai_enabled() -> bool:
+        raw_value = Config._get_optional_config_value("HAPE_KUBE_AGENT_AI_ENABLED")
+        if raw_value is None:
+            return False
+        return ValidationUtils.validate_bool("HAPE_KUBE_AGENT_AI_ENABLED", raw_value)
+
+    @staticmethod
+    def get_kube_agent_ai_stale_hours() -> int:
+        value = Config._get_config_int_with_default("HAPE_KUBE_AGENT_AI_STALE_HOURS", 6)
+        ValidationUtils.validate_positive_int("HAPE_KUBE_AGENT_AI_STALE_HOURS", value)
+        return value
+
+    @staticmethod
+    def get_kube_agent_restart_threshold() -> int:
+        value = Config._get_config_int_with_default("HAPE_KUBE_AGENT_RESTART_THRESHOLD", 3)
+        ValidationUtils.validate_positive_int("HAPE_KUBE_AGENT_RESTART_THRESHOLD", value)
+        return value
+
+    @staticmethod
+    def get_kube_agent_pod_log_tail_lines() -> int:
+        value = Config._get_config_int_with_default("HAPE_KUBE_AGENT_POD_LOG_TAIL_LINES", 200)
+        ValidationUtils.validate_positive_int("HAPE_KUBE_AGENT_POD_LOG_TAIL_LINES", value)
+        return value
+
+    @staticmethod
+    def get_kube_agent_lookback_minutes() -> int:
+        value = Config._get_config_int_with_default("HAPE_KUBE_AGENT_LOOKBACK_MINUTES", 30)
+        ValidationUtils.validate_positive_int("HAPE_KUBE_AGENT_LOOKBACK_MINUTES", value)
+        return value
+
+    @staticmethod
+    def get_kube_agent_slack_channel() -> str:
+        channel = Config._get_optional_config_value("HAPE_KUBE_AGENT_SLACK_CHANNEL")
+        return channel or ""
+
+    @staticmethod
+    def get_kube_agent_cost_total_hourly_usd_threshold() -> float:
+        return Config._get_config_float_with_default("HAPE_KUBE_AGENT_COST_TOTAL_HOURLY_USD_THRESHOLD", 20.0)
+
+    @staticmethod
+    def get_kube_agent_cost_workload_hourly_usd_threshold() -> float:
+        return Config._get_config_float_with_default("HAPE_KUBE_AGENT_COST_WORKLOAD_HOURLY_USD_THRESHOLD", 5.0)
+
+    @staticmethod
+    def get_kube_agent_cost_increase_ratio_threshold() -> float:
+        return Config._get_config_float_with_default("HAPE_KUBE_AGENT_COST_INCREASE_RATIO_THRESHOLD", 1.5)
+
+    @staticmethod
+    def get_kube_agent_cost_top_workloads_limit() -> int:
+        value = Config._get_config_int_with_default("HAPE_KUBE_AGENT_COST_TOP_WORKLOADS_LIMIT", 5)
+        ValidationUtils.validate_positive_int("HAPE_KUBE_AGENT_COST_TOP_WORKLOADS_LIMIT", value)
+        return value
 

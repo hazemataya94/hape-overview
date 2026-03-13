@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from services.kube_agent.case.incident_case_builder import IncidentCaseBuilder
 from services.kube_agent.checks.diagnostic_check_models import CheckResult
@@ -16,7 +16,7 @@ def test_incident_case_builder_sets_likely_causes_and_recommendations() -> None:
                 source="kubernetes",
                 resource_ref="pod/payments/api",
                 value=[{"reason": "Killing", "message": "OOMKilled"}],
-                observed_at=datetime.utcnow(),
+                observed_at=datetime.now(UTC),
                 metadata={},
             )
         ],
@@ -43,7 +43,7 @@ def test_incident_case_builder_keeps_hypotheses_for_mixed_results() -> None:
     trigger = Trigger(type="pod", cluster="demo", namespace="payments", name="api")
     evidence = EvidenceBundle(
         trigger=trigger,
-        items=[EvidenceItem(key="kubernetes.pod.events", source="kubernetes", resource_ref="pod/payments/api", value=[], observed_at=datetime.utcnow(), metadata={})],
+        items=[EvidenceItem(key="kubernetes.pod.events", source="kubernetes", resource_ref="pod/payments/api", value=[], observed_at=datetime.now(UTC), metadata={})],
         links={"Pod dashboard": "http://grafana.local/d/pod"},
     )
     check_results = [

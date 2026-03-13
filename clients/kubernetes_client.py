@@ -1,15 +1,20 @@
 import kubernetes.config
 import kubernetes.client
 import re
+import socket
+import subprocess
 import time
 from collections import Counter
 from typing import Any, Dict, List
+from urllib.parse import urlparse
 
 from core.logging import LocalLogging
 from utils.file_manager import FileManager
 
 
 class KubernetesClient:
+    _port_forward_processes: dict[tuple[str, str, str, int], subprocess.Popen] = {}
+
     def __init__(self, context: str | None = None, config_file: str | None = None, use_incluster_config: bool = False) -> None:
         resolved_context = context.strip() if context else ""
         if use_incluster_config:
@@ -42,6 +47,167 @@ class KubernetesClient:
     def _sanitize_filename(self, name):
         self.logger.debug(f"_sanitize_filename(name: {name})")
         return name.replace("/", "_")
+
+    @staticmethod
+    def _is_port_open(host: str, port: int, timeout_seconds: float = 0.2) -> bool:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout_seconds)
+            return sock.connect_ex((host, port)) == 0
+
+    def _service_exists(self, namespace: str, service_name: str) -> bool:
+        try:
+            self.core_v1.read_namespaced_service(name=service_name, namespace=namespace)
+            return True
+        except kubernetes.client.rest.ApiException as exc:
+            if exc.status == 404:
+                return False
+            raise
+
+    def _resolve_prometheus_service_candidates(self, namespace: str, requested_service_names: list[str] | None = None) -> list[str]:
+        candidates = requested_service_names or []
+        if candidates:
+            return candidates
+        services = self.core_v1.list_namespaced_service(namespace=namespace)
+        dynamic_candidates: list[str] = []
+        for item in services.items:
+            service_name = item.metadata.name if item.metadata else ""
+            if not service_name or "prometheus" not in service_name.lower():
+                continue
+            ports = item.spec.ports if item.spec else []
+            if any(getattr(port, "port", None) == 9090 for port in ports or []):
+                dynamic_candidates.append(service_name)
+        default_order = ["kube-prometheus-stack-prometheus", "prometheus-operated", "prometheus-kube-prometheus-prometheus"]
+        ordered = [name for name in default_order if name in dynamic_candidates]
+        ordered.extend([name for name in dynamic_candidates if name not in ordered])
+        return ordered
+
+    def ensure_prometheus_port_forward(
+        self,
+        prometheus_base_url: str,
+        namespace: str = "monitoring",
+        target_port: int = 9090,
+        requested_service_names: list[str] | None = None,
+    ) -> bool:
+        self.logger.debug(
+            "ensure_prometheus_port_forward("
+            f"prometheus_base_url: {prometheus_base_url}, namespace: {namespace}, "
+            f"target_port: {target_port}, requested_service_names: {requested_service_names})"
+        )
+        parsed = urlparse(prometheus_base_url)
+        host = (parsed.hostname or "").strip().lower()
+        if host not in {"localhost", "127.0.0.1"}:
+            return False
+        local_port = int(parsed.port or target_port)
+        if self._is_port_open(host=host, port=local_port):
+            return True
+        service_candidates = self._resolve_prometheus_service_candidates(namespace=namespace, requested_service_names=requested_service_names)
+        for service_name in service_candidates:
+            if not self._service_exists(namespace=namespace, service_name=service_name):
+                continue
+            process_key = (self.context, namespace, service_name, local_port)
+            existing_process = self._port_forward_processes.get(process_key)
+            if existing_process and existing_process.poll() is None:
+                if self._is_port_open(host=host, port=local_port):
+                    return True
+            command = [
+                "kubectl",
+                "--context",
+                self.context,
+                "-n",
+                namespace,
+                "port-forward",
+                f"svc/{service_name}",
+                f"{local_port}:{target_port}",
+            ]
+            process = subprocess.Popen(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            self._port_forward_processes[process_key] = process
+            for _ in range(20):
+                if process.poll() is not None:
+                    break
+                if self._is_port_open(host=host, port=local_port):
+                    self.logger.info(f"Started Prometheus port-forward to service '{service_name}' on localhost:{local_port}.")
+                    return True
+                time.sleep(0.2)
+            if process.poll() is None:
+                process.terminate()
+            self._port_forward_processes.pop(process_key, None)
+        return False
+
+    def _resolve_grafana_service_candidates(self, namespace: str, requested_service_names: list[str] | None = None) -> list[str]:
+        candidates = requested_service_names or []
+        if candidates:
+            return candidates
+        services = self.core_v1.list_namespaced_service(namespace=namespace)
+        dynamic_candidates: list[str] = []
+        for item in services.items:
+            service_name = item.metadata.name if item.metadata else ""
+            if not service_name or "grafana" not in service_name.lower():
+                continue
+            dynamic_candidates.append(service_name)
+        default_order = ["kube-prometheus-stack-grafana", "grafana"]
+        ordered = [name for name in default_order if name in dynamic_candidates]
+        ordered.extend([name for name in dynamic_candidates if name not in ordered])
+        return ordered
+
+    def ensure_grafana_port_forward(
+        self,
+        grafana_base_url: str,
+        namespace: str = "monitoring",
+        target_port: int = 80,
+        requested_service_names: list[str] | None = None,
+    ) -> bool:
+        self.logger.debug(
+            "ensure_grafana_port_forward("
+            f"grafana_base_url: {grafana_base_url}, namespace: {namespace}, "
+            f"target_port: {target_port}, requested_service_names: {requested_service_names})"
+        )
+        parsed = urlparse(grafana_base_url)
+        host = (parsed.hostname or "").strip().lower()
+        if host not in {"localhost", "127.0.0.1"}:
+            return False
+        local_port = int(parsed.port or 3000)
+        if self._is_port_open(host=host, port=local_port):
+            return True
+        service_candidates = self._resolve_grafana_service_candidates(namespace=namespace, requested_service_names=requested_service_names)
+        for service_name in service_candidates:
+            if not self._service_exists(namespace=namespace, service_name=service_name):
+                continue
+            process_key = (self.context, namespace, service_name, local_port)
+            existing_process = self._port_forward_processes.get(process_key)
+            if existing_process and existing_process.poll() is None:
+                if self._is_port_open(host=host, port=local_port):
+                    return True
+            command = [
+                "kubectl",
+                "--context",
+                self.context,
+                "-n",
+                namespace,
+                "port-forward",
+                f"svc/{service_name}",
+                f"{local_port}:{target_port}",
+            ]
+            process = subprocess.Popen(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            self._port_forward_processes[process_key] = process
+            for _ in range(20):
+                if process.poll() is not None:
+                    break
+                if self._is_port_open(host=host, port=local_port):
+                    self.logger.info(f"Started Grafana port-forward to service '{service_name}' on localhost:{local_port}.")
+                    return True
+                time.sleep(0.2)
+            if process.poll() is None:
+                process.terminate()
+            self._port_forward_processes.pop(process_key, None)
+        return False
 
     def _is_node_ready(self, node_name: str) -> bool:
         self.logger.debug(f"_is_node_ready(node_name: {node_name})")

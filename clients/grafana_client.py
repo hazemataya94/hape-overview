@@ -15,9 +15,10 @@ class GrafanaClient:
         self.logger = LocalLogging.get_logger("hape.grafana_client")
         self.base_url = UrlsUtils.normalize_grafana_base_url(base_url)
         self.timeout_seconds = timeout_seconds
+        self.auth = self._build_auth(username=username, password=password)
         self.session = requests.Session()
         self.session.headers.update(self._build_headers(token=token))
-        self.session.auth = self._build_auth(username=username, password=password)
+        self.session.auth = self.auth
 
     @staticmethod
     def _build_headers(token: str | None) -> dict[str, str]:
@@ -37,7 +38,7 @@ class GrafanaClient:
     def _request_json(self, path: str, params: dict[str, Any] | None = None) -> Any:
         url = f"{self.base_url}{path}"
         self.logger.debug(f"_request_json(path: {path}, params: {params})")
-        response = self.session.get(url, params=params, timeout=self.timeout_seconds)
+        response = self.session.get(url, params=params, timeout=self.timeout_seconds, auth=self.auth)
         response.raise_for_status()
         if not response.content:
             return None

@@ -23,7 +23,6 @@ Out of scope for the first version:
 - Automatic remediation
 - Write actions against the cluster
 - Generic agent tool-calling loops
-- Cost analysis
 
 ---
 
@@ -193,6 +192,7 @@ Normalize the raw input that starts an investigation.
 - Deployment trigger
 - Node trigger
 - Alert trigger
+- Cost trigger
 
 ### Trigger workflow
 ```mermaid
@@ -263,6 +263,7 @@ Run deterministic checks against the normalized evidence bundle.
 - Rollout regression checks
 - Probe failure checks
 - Image pull checks
+- Cost checks
 
 ### Check workflow
 ```mermaid
@@ -383,6 +384,7 @@ flowchart TD
 - CLI-first execution only
 - Read-only Kubernetes incident investigation
 - Kubernetes, Prometheus, Alertmanager, Grafana, and Slack integrations only
+- Cost analysis from `eks-deployment-cost` exporter metrics through Prometheus
 - Deterministic checks before AI explanation
 - SQLite-backed incident memory
 - No operator

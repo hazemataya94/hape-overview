@@ -1,0 +1,1 @@
+Cost analysis findings: Total hourly cost 40.00 USD is above threshold 20.00 USD. Deployment hourly cost 12.00 USD is above threshold 5.00 USD. Hourly cost increase ratio is 4.00 and is above threshold 1.50. Detected increased workload costs in the last window: payments/api (+3.00 USD/h), payments/worker (+1.00 USD/h).

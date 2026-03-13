@@ -8,6 +8,11 @@ class RecommendationBuilder:
         "node-not-ready": "Inspect node kubelet status, networking, and underlying node health.",
         "image-pull-backoff": "Verify image repository, tag, and image pull credentials.",
         "err-image-pull": "Verify image repository accessibility and registry credentials.",
+        "cost-exporter-unavailable": "Verify eks-deployment-cost exporter health, ServiceMonitor scrape status, and exporter logs.",
+        "cost-total-hourly-threshold": "Review namespace-wide resource requests and right-size high-request workloads.",
+        "cost-workload-hourly-threshold": "Right-size deployment CPU and memory requests or scale down idle replicas.",
+        "cost-hourly-increase-ratio": "Review recent deployment/config changes and compare request growth against baseline.",
+        "cost-top-workloads-increase": "Review workloads with increased hourly cost and compare resource requests and replicas against one-hour baseline.",
     }
 
     def _build_recommendation(self, check_result: CheckResult) -> str | None:

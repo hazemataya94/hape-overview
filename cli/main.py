@@ -77,6 +77,7 @@ class CLI:
 
     @staticmethod
     def run() -> None:
+        Config.ensure_env_loaded()
         parser = CLI.build_parser()
         if len(sys.argv) == 1:
             parser.print_help()

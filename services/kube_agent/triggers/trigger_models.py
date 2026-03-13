@@ -6,7 +6,7 @@ from core.errors.exceptions import HapeValidationError
 
 @dataclass(frozen=True)
 class Trigger:
-    SUPPORTED_TYPES: ClassVar[set[str]] = {"pod", "deployment", "node", "alert"}
+    SUPPORTED_TYPES: ClassVar[set[str]] = {"pod", "deployment", "node", "alert", "cost"}
     SUPPORTED_SOURCES: ClassVar[set[str]] = {"cli", "alertmanager"}
 
     type: str
@@ -36,7 +36,7 @@ class Trigger:
             raise HapeValidationError(code="KUBE_AGENT_TRIGGER_CLUSTER_REQUIRED", message="Trigger field 'cluster' is required.")
         if not self.name:
             raise HapeValidationError(code="KUBE_AGENT_TRIGGER_NAME_REQUIRED", message="Trigger field 'name' is required.")
-        if self.type in {"pod", "deployment"} and not self.namespace:
+        if self.type in {"pod", "deployment", "cost"} and not self.namespace:
             raise HapeValidationError(code="KUBE_AGENT_TRIGGER_NAMESPACE_REQUIRED", message=f"Trigger field 'namespace' is required for type '{self.type}'.")
 
 

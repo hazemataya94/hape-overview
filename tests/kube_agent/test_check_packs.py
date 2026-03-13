@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from services.kube_agent.checks.packs.pod_pending_checks import FailedSchedulingCheck, InsufficientResourceCheck
 from services.kube_agent.checks.packs.pod_restart_checks import OomKillCheck
@@ -10,7 +10,7 @@ from services.kube_agent.triggers.trigger_models import Trigger
 def _build_evidence(trigger: Trigger, key: str, value: object) -> EvidenceBundle:
     return EvidenceBundle(
         trigger=trigger,
-        items=[EvidenceItem(key=key, source="kubernetes", resource_ref=f"pod/{trigger.namespace}/{trigger.name}", value=value, observed_at=datetime.utcnow(), metadata={})],
+        items=[EvidenceItem(key=key, source="kubernetes", resource_ref=f"pod/{trigger.namespace}/{trigger.name}", value=value, observed_at=datetime.now(UTC), metadata={})],
         links={},
     )
 

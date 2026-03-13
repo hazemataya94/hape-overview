@@ -39,20 +39,20 @@ flowchart TD
 - Memory service stores fingerprints and runs and does not collect evidence.
 
 ## Trigger handling
-- Supported kinds are `pod`, `deployment`, `node`, and `alert`.
+- Supported kinds are `pod`, `deployment`, `node`, `alert`, and `cost`.
 - Trigger parsing normalizes names and maps kind-specific fields.
 - Trigger resolver enforces required fields by kind.
 
 ## Evidence collection behavior
 - Kubernetes evidence includes pod status, events, logs, owner, rollout context, node conditions, and scheduling failures.
-- Prometheus evidence includes pod, node, and alert-focused query outputs.
+- Prometheus evidence includes pod, node, alert, and cost-focused query outputs.
 - Alertmanager evidence adds matched alerts for alert triggers.
 - Grafana default dashboard collector selects high-value kube-prometheus-stack dashboards with resource query variables.
 - Grafana link resolver adds additional dashboard links into the evidence bundle.
 
 ## Deterministic checks behavior
 - Check engine runs registry checks and returns `matched`, `not_matched`, or `inconclusive`.
-- Check packs include restart, pending, node conditions, rollout regression, probe failures, and image pull checks.
+- Check packs include restart, pending, node conditions, rollout regression, probe failures, image pull checks, and cost anomaly checks.
 - Incident case builder derives likely causes, hypotheses, recommendations, and related resources from check results.
 
 ## AI explanation behavior
@@ -79,6 +79,16 @@ hape kube-agent incidents list --output text
 4. Confirm latest incident appears.
 5. Repeat the same investigate command.
 6. Confirm occurrence count increases in `incidents show`.
+7. Run cost analysis:
+```bash
+hape kube-agent cost-analyze --kube-context demo --namespace payments --deployment api --historical-offset 1h --output markdown --use-ai false
+```
+8. Confirm output includes exporter health, hourly cost context, and threshold-based anomaly statuses.
+9. Run namespace-wide cost increase analysis:
+```bash
+hape kube-agent cost-analyze --kube-context demo --namespace payments --all-workloads --historical-offset 1h --output markdown --use-ai false
+```
+10. Confirm findings include workloads that increased compared to one hour ago.
 
 ## Test references
 - Kube-agent unit and integration tests: `tests/kube_agent/`.

@@ -18,9 +18,9 @@ class TriggerResolver:
     def _validate_kind_specific_fields(self, normalized_trigger: dict[str, Any]) -> None:
         trigger_type = normalized_trigger["type"]
         name = normalized_trigger.get("name")
-        if trigger_type in {"pod", "deployment", "node", "alert"} and not name:
+        if trigger_type in {"pod", "deployment", "node", "alert", "cost"} and not name:
             raise HapeValidationError(code="KUBE_AGENT_TRIGGER_NAME_REQUIRED", message=f"Trigger name field is required for type '{trigger_type}'.")
-        if trigger_type in {"pod", "deployment"} and not normalized_trigger.get("namespace"):
+        if trigger_type in {"pod", "deployment", "cost"} and not normalized_trigger.get("namespace"):
             raise HapeValidationError(code="KUBE_AGENT_TRIGGER_NAMESPACE_REQUIRED", message=f"Trigger namespace is required for type '{trigger_type}'.")
 
     def resolve(self, raw_trigger: dict[str, Any]) -> Trigger:

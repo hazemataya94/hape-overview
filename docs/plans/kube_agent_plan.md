@@ -35,7 +35,6 @@ The implementation must not add:
 - tool-calling agent loops
 - generic agent frameworks
 - write access to Kubernetes or external systems
-- cost analysis
 
 ---
 
@@ -1005,7 +1004,6 @@ Do not implement these in this project phase:
 - generic graph database
 - vector database
 - multi-tenant storage backend
-- cost anomaly logic
 
 ---
 

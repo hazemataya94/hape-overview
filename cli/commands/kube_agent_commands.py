@@ -198,6 +198,55 @@ class KubeAgentCommands:
         alert_parser.set_defaults(func=KubeAgentCommands.run_investigate_alert)
 
     @staticmethod
+    def _register_cost_analyze_parser(kube_agent_subparsers: argparse._SubParsersAction) -> None:
+        cost_parser = kube_agent_subparsers.add_parser(
+            "cost-analyze",
+            help="analyze deployment cost metrics from eks-deployment-cost exporter.",
+        )
+        cost_parser.add_argument(
+            "--kube-context",
+            required=True,
+            default=None,
+            help="Kubernetes context (cluster) name.",
+        )
+        cost_parser.add_argument(
+            "--namespace",
+            required=True,
+            default=None,
+            help="namespace scope for cost analysis.",
+        )
+        target_group = cost_parser.add_mutually_exclusive_group(required=True)
+        target_group.add_argument(
+            "--deployment",
+            default=None,
+            help="deployment name.",
+        )
+        target_group.add_argument(
+            "--all-workloads",
+            action="store_true",
+            help="analyze all workloads in the namespace.",
+        )
+        cost_parser.add_argument(
+            "--historical-offset",
+            required=False,
+            default="1h",
+            help="historical Prometheus offset for increase-ratio checks, for example: 30m or 1h.",
+        )
+        cost_parser.add_argument(
+            "--output",
+            required=False,
+            default="text",
+            help="output format: text|json|markdown|slack.",
+        )
+        cost_parser.add_argument(
+            "--use-ai",
+            required=False,
+            default="false",
+            help="enable optional AI explanation: true|false.",
+        )
+        cost_parser.set_defaults(func=KubeAgentCommands.run_cost_analyze)
+
+    @staticmethod
     def register(subparsers: argparse._SubParsersAction) -> None:
         parser = subparsers.add_parser(
             "kube-agent",
@@ -211,6 +260,7 @@ class KubeAgentCommands:
         investigate_subparsers = investigate_parser.add_subparsers(dest="investigate_kind", metavar="kind")
         investigate_subparsers.required = True
         KubeAgentCommands._register_investigate_parser(investigate_subparsers=investigate_subparsers)
+        KubeAgentCommands._register_cost_analyze_parser(kube_agent_subparsers=kube_agent_subparsers)
 
         incidents_parser = kube_agent_subparsers.add_parser("incidents", help="list or show stored incidents.")
         incidents_subparsers = incidents_parser.add_subparsers(dest="incidents_command", metavar="command")
@@ -288,6 +338,25 @@ class KubeAgentCommands:
                 "source": "cli",
                 "labels": labels,
                 "namespace": args.namespace,
+            },
+            use_ai=KubeAgentCommands._parse_bool_text(args.use_ai),
+        )
+        KubeAgentCommands._print_findings(findings=findings, output=args.output)
+
+    @staticmethod
+    def run_cost_analyze(args: Any) -> None:
+        LocalLogging.bootstrap()
+        kube_agent_service = KubeAgentService()
+        is_all_workloads = bool(args.all_workloads)
+        target_name = "__all__" if is_all_workloads else args.deployment
+        findings = kube_agent_service.investigate(
+            raw_trigger={
+                "type": "cost",
+                "cluster": args.kube_context,
+                "namespace": args.namespace,
+                "name": target_name,
+                "source": "cli",
+                "metadata": {"historical_offset": args.historical_offset, "all_workloads": is_all_workloads},
             },
             use_ai=KubeAgentCommands._parse_bool_text(args.use_ai),
         )

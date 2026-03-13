@@ -39,7 +39,12 @@ class IncidentCaseBuilder:
         return [check_result.check_name for check_result in check_results if check_result.status == "matched"]
 
     @staticmethod
-    def _build_summary(trigger: Trigger, likely_causes: list[str]) -> str:
+    def _build_summary(trigger: Trigger, likely_causes: list[str], check_results: list[CheckResult]) -> str:
+        if trigger.type == "cost":
+            matched_summaries = [item.summary for item in check_results if item.status == "matched"]
+            if matched_summaries:
+                return "Cost analysis findings: " + " ".join(matched_summaries)
+            return f"No cost increases or threshold anomalies detected for {trigger.type} '{trigger.name}'."
         if likely_causes:
             causes_text = ", ".join(likely_causes)
             return f"Detected {len(likely_causes)} likely cause(s) for {trigger.type} '{trigger.name}': {causes_text}."
@@ -52,7 +57,7 @@ class IncidentCaseBuilder:
 
     def build(self, trigger: Trigger, evidence: EvidenceBundle, check_results: list[CheckResult]) -> IncidentCase:
         likely_causes = self._build_likely_causes(check_results=check_results)
-        summary = self._build_summary(trigger=trigger, likely_causes=likely_causes)
+        summary = self._build_summary(trigger=trigger, likely_causes=likely_causes, check_results=check_results)
         hypotheses = self.hypothesis_builder.build(check_results=check_results)
         recommendations = self.recommendation_builder.build(check_results=check_results)
         return IncidentCase(
